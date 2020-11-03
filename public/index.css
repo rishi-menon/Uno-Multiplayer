@@ -1,0 +1,16 @@
+
+body {
+    background-color: #404040;
+}
+
+
+.canvasParent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4% 0;
+}
+
+.canvasParent canvas {
+    background-color: #fff;
+}

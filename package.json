@@ -1,0 +1,17 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "uno game",
+  "main": "sMain.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "localtunnel": "^2.0.0",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rishi Menon",
+  "license": "MIT"
+}
