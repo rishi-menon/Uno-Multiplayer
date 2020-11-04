@@ -17,6 +17,13 @@ body {
     font-family: 'Montserrat', sans-serif;
 }
 
+
+.logoContainer {
+    --logoBlockSize: 65px;
+    --animationDuration: 1s;
+    --animationOutPos: 2%;
+    --animationDefaultPos: 10%;
+}
 /*
 ////////////////////////////////////////////////////////////////////////////////
 //////////                          Main
@@ -45,53 +52,84 @@ main {
 .main .title {
     font-family: 'Merienda', cursive;
     font-size: 100px;
+    color: #2F2F2F;
 }
 
 .logoContainer {
     position: relative;
-    height: 12.5rem;
-    width: 12.5rem;
+    height: 14rem;
+    width: 14rem;
 }
 
-.logoContainer .redLogo {
+.logoBlockCommon {
     position: absolute;
-    width: 65px;
-    height: 65px;
+    width: var(--logoBlockSize, 65px);
+    height: var(--logoBlockSize, 65px);
+    border-radius: 5px;
+    transform: rotate(45deg);
 
-    /* Is there a better way to position it rather than this ? */
-    left: calc(50% - 32.5px);
-    top: 10%;
-
+    animation-timing-function: linear;
+    animation-delay: 0s;
+    animation-iteration-count: infinite;
+    animation-duration: var(--animationDuration, 5s);
+}
+.redLogo {
     background: #EF5555;
-    border-radius: 5px;
-    transform: rotate(45deg);
+    left: calc(50% - var(--logoBlockSize, 65px) / 2);
+    top: var(--animationDefaultPos);
+    animation-name: animLogoRed;
 }
-
-.logoContainer .yellowLogo {
-    position: absolute;
-    width: 65px;
-    height: 65px;
-
+.yellowLogo {
     background: #FFF50F;
-    border-radius: 5px;
-    transform: rotate(45deg);
+    top: calc(50% - var(--logoBlockSize, 65px) / 2);
+    right: var(--animationDefaultPos);
+    animation-name: animLogoYellow;
 }
-.logoContainer .greenLogo {
-    position: absolute;
-    width: 65px;
-    height: 65px;
-
+.greenLogo {
     background: #00CC5E;
-    border-radius: 5px;
-    transform: rotate(45deg);
-}
-.logoContainer .blueLogo {
-    position: absolute;
-    width: 65px;
-    height: 65px;
+    left: calc(50% - var(--logoBlockSize, 65px) / 2);
+    bottom: var(--animationDefaultPos);
+    animation-name: animLogoGreen;
 
-    background: #0989FF;
-    border-radius: 5px;
-    transform: rotate(45deg);
+}
+.blueLogo {
+    background: #0066FF;
+    top: calc(50% - var(--logoBlockSize, 65px) / 2);
+    left: var(--animationDefaultPos);
+    animation-name: animLogoBlue;
 }
 
+@keyframes animTemp {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes animLogoRed {
+    0%   { top: var(--animationOutPos);     }
+    25%  { top: var(--animationDefaultPos); }
+    50%  { top: var(--animationDefaultPos); }
+    75%  { top: var(--animationDefaultPos); }
+    100% { top: var(--animationOutPos);     }
+}
+@keyframes animLogoYellow {
+    0%   { right: var(--animationDefaultPos); }
+    25%  { right: var(--animationOutPos);     }
+    50%  { right: var(--animationDefaultPos); }
+    75%  { right: var(--animationDefaultPos); }
+    100% { right: var(--animationDefaultPos); }
+}
+@keyframes animLogoGreen {
+    0%   { bottom: var(--animationDefaultPos); }
+    25%  { bottom: var(--animationDefaultPos); }
+    50%  { bottom: var(--animationOutPos);     }
+    75%  { bottom: var(--animationDefaultPos); }
+    100% { bottom: var(--animationDefaultPos); }
+}
+@keyframes animLogoBlue {
+    0%   { left: var(--animationDefaultPos); }
+    25%  { left: var(--animationDefaultPos); }
+    50%  { left: var(--animationDefaultPos); }
+    75%  { left: var(--animationOutPos);     }
+    100% { left: var(--animationDefaultPos); }
+} 
