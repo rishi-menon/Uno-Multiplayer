@@ -1,16 +1,97 @@
 
+/*
+font-family: 'Merienda', cursive;
+font-family: 'Montserrat', sans-serif;
+*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+a {
+    text-decoration: none;
+    color: inherit;
+}
 body {
-    background-color: #404040;
+    background-color: #2E2E2E;
+    font-family: 'Montserrat', sans-serif;
 }
 
+/*
+////////////////////////////////////////////////////////////////////////////////
+//////////                          Main
+////////////////////////////////////////////////////////////////////////////////
+*/
 
-.canvasParent {
+main {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4% 0;
+
+    height: 100vh;
 }
 
-.canvasParent canvas {
-    background-color: #fff;
+.main {
+    background-color: #6978FF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    
+    height: 80%;
+    width: 80%;
 }
+
+.main .title {
+    font-family: 'Merienda', cursive;
+    font-size: 100px;
+}
+
+.logoContainer {
+    position: relative;
+    height: 12.5rem;
+    width: 12.5rem;
+}
+
+.logoContainer .redLogo {
+    position: absolute;
+    width: 65px;
+    height: 65px;
+
+    /* Is there a better way to position it rather than this ? */
+    left: calc(50% - 32.5px);
+    top: 10%;
+
+    background: #EF5555;
+    border-radius: 5px;
+    transform: rotate(45deg);
+}
+
+.logoContainer .yellowLogo {
+    position: absolute;
+    width: 65px;
+    height: 65px;
+
+    background: #FFF50F;
+    border-radius: 5px;
+    transform: rotate(45deg);
+}
+.logoContainer .greenLogo {
+    position: absolute;
+    width: 65px;
+    height: 65px;
+
+    background: #00CC5E;
+    border-radius: 5px;
+    transform: rotate(45deg);
+}
+.logoContainer .blueLogo {
+    position: absolute;
+    width: 65px;
+    height: 65px;
+
+    background: #0989FF;
+    border-radius: 5px;
+    transform: rotate(45deg);
+}
+
