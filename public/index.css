@@ -64,7 +64,7 @@ main {
     align-items: center;
     justify-content: space-around;
 
-    height: 100%;
+    height: 60%;
 }
 
 .main .title {
@@ -73,6 +73,13 @@ main {
     color: #2F2F2F;
 }
 
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+}
 /*
 ////////////////////////////////////////////////////////////////////////////////
 //////////                          Logo
@@ -170,10 +177,11 @@ main {
 
 .buttonContainer {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     height: 20%;
+    width: 30%;
 }
 .button p {
     font-family: 'Montserrat', sans-serif;
@@ -190,7 +198,6 @@ main {
 
     background-color: #96AF00;
     border-radius: 30px;
-    width: 100%;
 }
 
 .button:hover {
@@ -213,7 +220,7 @@ main {
 
     left: 50%;
     /* bottom: 12%; */
-    top: 50%;
+    top: 60%;
     min-height: 23rem;
     min-width: 25rem;
 
@@ -334,15 +341,13 @@ main {
     /* justify-content: space-between; */
 
     left: 50%;
-    top: 50%;
+    top: 55%;
     min-height: 7rem;
     min-width: 15rem;
     transform: translateX(-50%);
 
     background: #FCEFC5;
     box-shadow: 0px 0px 5px 8px rgba(0, 0, 0, 0.25);
-
-    padding: 0rem 1rem;
 }
 
 .enterName_errorMsg {
@@ -363,9 +368,17 @@ main {
 .enterName_CloseBtnContainer {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     width: 100%;
     padding: 0.4rem 0rem;
+    background: #908845;
+    margin-bottom: 0.5rem;
+}
+
+.enterName_CloseBtnContainer p {
+    padding-left: 0.8rem;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .enterName_CloseButton {
@@ -393,6 +406,8 @@ main {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 0rem 1rem;
+
     height: 80%;
     width: 100%;
 }

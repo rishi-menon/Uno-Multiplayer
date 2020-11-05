@@ -33,6 +33,7 @@ const e_enterName_codeField = e_enterNameDlg.querySelector (".enterName_Code");
 const e_enterName_closeBtn = e_enterNameDlg.querySelector (".enterName_CloseButton");
 const e_enterName_submitBtn = e_enterNameDlg.querySelector(".enterName_enterBtn");
 const e_enterName_error = e_enterNameDlg.querySelector(".enterName_errorMsg")
+const e_enterName_dlgTitle = e_enterNameDlg.querySelector(".enterName_dlgHeaderTitle");
 
 const StateEnterName_Invalid = 0;
 const StateEnterName_CreateRoom = 1;
@@ -51,7 +52,7 @@ e_createRoomBtn.addEventListener ('click', () => {
   if (!bCanClickMainMenuBtns) return;
 
   e_enterName_error.style.display = "none"; //disable the error message
-
+  e_enterName_dlgTitle.textContent = "Create A Room"
   //Show the pop up to enter a name
   e_enterNameDlg.style.display = "flex";
   e_enterName_codeField.style.display = "none"; //Dont display the enter code field
@@ -63,7 +64,7 @@ e_joinRoomBtn.addEventListener ('click', () => {
   if (!bCanClickMainMenuBtns) return;
 
   e_enterName_error.style.display = "none"; //disable the error message
-
+  e_enterName_dlgTitle.textContent = "Join A Room"
   e_enterNameDlg.style.display = "flex";
   e_enterName_codeField.style.display = "flex"; //Dont display the enter code field
   nEnterNameDlgState = StateEnterName_JoinRoom;
