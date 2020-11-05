@@ -13,25 +13,90 @@
     <body>
         <main>
            <div class="main">
-                <p class="title">UNO</p>
-                <div class="logoContainer">
-                    <div class="redLogo logoBlockCommon"></div>
-                    <div class="yellowLogo logoBlockCommon"></div>
-                    <div class="greenLogo logoBlockCommon"></div>
-                    <div class="blueLogo logoBlockCommon"></div>
-                </div>
-
-                <div class="buttonContainer">
-                    <div class="button">
-                        <p>Create Room</p>
+               <div class="mainPageGroup">
+                    <p class="title">UNO</p>
+                    <div class="logoContainer">
+                        <div class="redLogo logoBlockCommon"></div>
+                        <div class="yellowLogo logoBlockCommon"></div>
+                        <div class="greenLogo logoBlockCommon"></div>
+                        <div class="blueLogo logoBlockCommon"></div>
                     </div>
 
-                    <div class="button">
-                        <p>Join Room</p>
+                    <div class="buttonContainer">
+                        <div class="button createRoomBtn">
+                            <p>Create Room</p>
+                        </div>
+
+                        <div class="button joinRoomBtn">
+                            <p>Join Room</p>
+                        </div>
+                    </div>
+               </div>
+                
+
+               <!-- 
+                   ////////////////////////////////////////////////
+                   /////////      Dialog where players will join 
+                   ////////////////////////////////////////////////
+                -->
+                <div class="roomDialog">
+                    <div class="roomHeader">
+                        <p>Room Code: <span class="roomCode"></span></p>
+                        <div class="roomCloseButton"></div>
+                    </div>
+                    
+                    <div class="playersContainer">
+                        <div class="roomDialogPlayer player1">
+                            <p>Rishi</p>
+                        </div>
+    
+                        <div class="roomDialogPlayer player2">
+                            <p>Simon</p>
+                        </div>
+    
+                        <div class="roomDialogPlayer player3">
+                            <p>Lamia</p>
+                        </div>
+                        <div class="roomDialogPlayer player4">
+                            <p>Cheng</p>
+                        </div>
+
                     </div>
 
+                    <div class="roomStartGameButton">
+                        <p>Start Game</p>
+                    </div> 
                 </div>
 
+                <!-- 
+                   ////////////////////////////////////////////////
+                   /////////      Dialog to enter name 
+                   ////////////////////////////////////////////////
+                -->
+                <div class="enterNameDlg">
+                    <div class="enterName_CloseBtnContainer">
+                        <div class="enterName_CloseButton"></div>
+                    </div>
+                    
+                    <div class="enterName_InputContainer">
+                        <form>
+                            <div class="enterName_Name">
+                                <label for="Name">Name:</label>
+                                <input type="text" id="enterName_NameField" name="Name" value="">
+                            </div>
+                            <div class="enterName_Code">
+                                <label for="Code">Code:</label>
+                                <input type="text" id="enterName_CodeField" name="Code" value="">
+                            </div>
+                        </form>   
+                    </div>
+                    
+                    <p class="enterName_errorMsg">Error</p>
+                    <div class="enterName_enterBtn">
+                        <p>Enter</p>
+                    </div>
+                </div>
+                
            </div>
         </main>
 

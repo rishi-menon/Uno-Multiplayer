@@ -23,6 +23,21 @@ body {
     --animationOutPos: 2%;
     --animationDefaultPos: 10%;
 }
+
+input[type=text] {
+    width: 100%;
+    padding: 10px 14px;
+    margin: 4px 0;
+
+    border: 2px solid #bbb;
+    border-radius: 8px;
+    outline: none;
+    transition: border 0.4s;
+}
+input[type=text]:focus {
+    border: 2px solid #555;
+}
+
 /*
 ////////////////////////////////////////////////////////////////////////////////
 //////////                          Main
@@ -38,14 +53,18 @@ main {
 }
 
 .main {
-    background-color: #6978FF;
+    background-color: #6978FF;    
+    height: 80%;
+    width: 80%;
+}
+
+.mainPageGroup {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
-    
-    height: 80%;
-    width: 80%;
+
+    height: 100%;
 }
 
 .main .title {
@@ -160,6 +179,7 @@ main {
     font-family: 'Montserrat', sans-serif;
     font-size: 20px;
     color: #000;
+    cursor: default;
 }
 
 .button {
@@ -175,4 +195,247 @@ main {
 
 .button:hover {
     background-color: #CFE353;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//////////                    Join room style
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+.roomDialog {
+    position: absolute;
+    display: none;  /* None so that it is not rendered initially */
+
+    flex-direction: column;
+    align-items: center;
+    /* justify-content: space-between; */
+
+    left: 50%;
+    /* bottom: 12%; */
+    top: 50%;
+    min-height: 23rem;
+    min-width: 25rem;
+
+    transform: translate(-50%, -50%);
+
+    background: #FCEFC5;
+    box-shadow: 0px 0px 5px 8px rgba(0, 0, 0, 0.25);
+
+}
+
+/*
+////////////////////////////////
+//////////  Header
+////////////////////////////////
+*/
+.roomDialog .roomHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.0rem;
+
+    width: 100%;
+    min-height: 3rem;
+    background: #908845;
+    box-shadow: 0px 4px 3px 1px rgba(0, 0, 0, 0.25);
+}
+
+.roomDialog .roomHeader p {
+    font-size: 25px;
+    padding: 0rem 1rem;
+}
+
+.roomDialog .roomHeader .roomCloseButton {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+
+    background: #FF0000;
+    box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.25);
+    margin: 0 0.5rem;
+}
+.roomDialog .roomHeader .roomCloseButton:hover {
+    background: #FFAAAA;
+}
+/*
+////////////////////////////////
+//////////  Players
+////////////////////////////////
+*/
+
+.playersContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 100%;
+    width: 100%;
+}
+
+.playersContainer .roomDialogPlayer {
+
+    width: 100%;
+    background: #DBAF89;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    padding: 10px 0px;
+    margin-bottom: 10px;
+}
+
+.playersContainer .roomDialogPlayer p {
+    font-size: 20px;
+    text-align: center;
+}
+
+/*
+////////////////////////////////
+//////////  Start game
+////////////////////////////////
+*/
+
+.roomStartGameButton {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    bottom: 0.5rem;
+    padding: 1rem 1rem;
+
+    background-color: #908845;
+    border-radius: 30px;
+    min-width: 10rem;
+}
+
+.roomStartGameButton p {
+    padding: 0rem 0.5rem;
+    font-size: 22px;
+    cursor: default;
+}
+
+.roomStartGameButton:hover {
+    background-color: #C6BB63;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//////////                    Enter name dlg
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+.enterNameDlg {
+    position: absolute;
+    display: none;  /* Set this to none initially so the dlg doesnt show up*/
+    flex-direction: column;
+
+    align-items: center;
+    /* justify-content: space-between; */
+
+    left: 50%;
+    top: 50%;
+    min-height: 7rem;
+    min-width: 15rem;
+    transform: translateX(-50%);
+
+    background: #FCEFC5;
+    box-shadow: 0px 0px 5px 8px rgba(0, 0, 0, 0.25);
+
+    padding: 0rem 1rem;
+}
+
+.enterName_errorMsg {
+    display: none;
+    font-size: 18px;
+    color: #FF7070;
+    text-align: left;
+
+    padding: 0.7rem 0;
+
+    max-width: 25vw;    /* Prevent the error message from getting too too large*/
+}
+/*
+////////////////////////////////
+//////////  Close button
+////////////////////////////////
+*/
+.enterName_CloseBtnContainer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    padding: 0.4rem 0rem;
+}
+
+.enterName_CloseButton {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    
+    background: #FF0000;
+    box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.25);
+    margin: 0 0.5rem;
+}
+
+.enterName_CloseButton:hover {
+    background: #FFAAAA;
+}
+
+/*
+////////////////////////////////
+////////// Input fields
+////////////////////////////////
+*/
+
+.enterName_InputContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80%;
+    width: 100%;
+}
+
+.enterName_InputContainer form {
+    width: 100%;
+}
+
+.enterName_InputContainer label {
+    font-size: 20px;
+}
+
+.enterName_Name, .enterName_Code{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.7rem;
+}
+
+
+
+/*
+////////////////////////////////
+//////////  Enter button
+////////////////////////////////
+*/
+
+.enterName_enterBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.5rem;
+
+    background: #908845;
+    border-radius: 20px;
+
+    margin-bottom: 0.7rem;
+}
+.enterName_enterBtn p {
+    font-size: 20px;
+    color: #000;
+    cursor: default;
+}
+
+.enterName_enterBtn:hover {
+    background-color: #C6BB63;
 }
