@@ -196,12 +196,13 @@ main {
     justify-content: center;
     padding: 1rem 1rem;
 
-    background-color: #96AF00;
+    background: #96AF00;
     border-radius: 30px;
+    transition: background 0.15s;
 }
 
 .button:hover {
-    background-color: #CFE353;
+    background: #CFE353;
 }
 
 /*
@@ -262,6 +263,7 @@ main {
     background: #FF0000;
     box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.25);
     margin: 0 0.5rem;
+    transition: background 0.15s
 }
 .roomDialog .roomHeader .roomCloseButton:hover {
     background: #FFAAAA;
@@ -283,7 +285,7 @@ main {
 }
 
 .playersContainer .roomDialogPlayer {
-
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -298,6 +300,24 @@ main {
 .playersContainer .roomDialogPlayer p {
     font-size: 20px;
     text-align: center;
+}
+
+.roomDialogPlayer .roomDialogKickPlayerBtn {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    width: 20px;
+    height: 6px;
+
+    transform: translateY(-50%);
+    cursor: default;
+
+    font-size: 60px;
+    background: #636363;
+    transition: background 0.15s;
+}
+.roomDialogPlayer .roomDialogKickPlayerBtn:hover {
+    background: #D60000;
 }
 
 /*
@@ -315,9 +335,11 @@ main {
     bottom: 0.5rem;
     padding: 1rem 1rem;
 
-    background-color: #908845;
+    background: #908845;
     border-radius: 30px;
     min-width: 10rem;
+
+    transition: background 0.15s;
 }
 
 .roomStartGameButton p {
@@ -327,7 +349,7 @@ main {
 }
 
 .roomStartGameButton:hover {
-    background-color: #C6BB63;
+    background: #C6BB63;
 }
 
 /*
@@ -393,6 +415,7 @@ main {
     background: #FF0000;
     box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.25);
     margin: 0 0.5rem;
+    transition: background 0.15s;
 }
 
 .enterName_CloseButton:hover {
@@ -448,6 +471,7 @@ main {
     border-radius: 20px;
 
     margin-bottom: 0.7rem;
+    transition: background 0.15s;
 }
 .enterName_enterBtn p {
     font-size: 20px;

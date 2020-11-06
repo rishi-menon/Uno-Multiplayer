@@ -22,7 +22,7 @@ function OnNewConnection(socket) {
     console.log ("New Connection: " + socket.id);
 
     socket.on ('disconnect', () => {
-        // console.log ("Disconnected: " + socket.id)
+        console.log ("Disconnected: " + socket.id)
         LeaveRoom (socket);
     });
 
@@ -38,24 +38,50 @@ function OnNewConnection(socket) {
         LeaveRoom (socket);
     })
 
+    socket.on("m_KickPlayerFromRoom", (nPlayerIndex) => {
+        KickPlayerFromRoom (socket, nPlayerIndex);
+    })
+
 }
 
-function LeaveRoom (socket) {
-    if (!mapSocketIdToRoomCode.has(socket.id))
+function KickPlayerFromRoom (socketRoom, nPlayerIndex)
+{
+    //cannot kick host ie index 0
+    if (nPlayerIndex < 1 || nPlayerIndex > (nMaxPlayersPerRoom-1))
+    {
+        console.log ("Invalid index for kick: " + nPlayerIndex);
+        return;
+    }
+    
+    let groupName = mapSocketIdToRoomCode.get (socketRoom.id);
+    if (!groupName) return;
+
+    let mapValue = mapRoomCodeToPlayers.get (groupName);
+    if (!mapValue)  return;
+
+    if (nPlayerIndex >= mapValue.count) return;
+
+    let playerSocketId = mapValue.players[nPlayerIndex].socketId;
+    let playerSocket = io.sockets.connected[playerSocketId];
+    LeaveRoom (playerSocket, "You have been kicked from the room");
+}
+
+function LeaveRoom (socket, strOptionalMsgIndividual) {
+    
+    let roomCode = mapSocketIdToRoomCode.get(socket.id);
+    if (!roomCode)
     {
         console.log ("Socket tried to leave but is not registered in the socket map: " + socket.id);
         return;
     }
-    let roomCode = mapSocketIdToRoomCode.get(socket.id);
     console.log ("Room Code where player is leaving: " + roomCode);
-
-    if (!mapRoomCodeToPlayers.has(roomCode))
+    
+    let mapValue = mapRoomCodeToPlayers.get (roomCode);
+    if (!mapValue)
     {
         console.log ("Socket tried to leave but is not registered in the RoomCode map: " + roomCode);
         return;
     }
-
-    let mapValue = mapRoomCodeToPlayers.get (roomCode);
 
     let index = -1;
     for (let i = 0; i < mapValue.count; i++)
@@ -96,21 +122,22 @@ function LeaveRoom (socket) {
         socket.leave (roomCode);
 
         //A regular player left
-        socket.emit ("m_LeaveRoom", "");
+        let strMessage = (strOptionalMsgIndividual) ? strOptionalMsgIndividual : "";
+
+        socket.emit ("m_LeaveRoom", strMessage);
         UpdatePlayersInRoom (roomCode);
     }
 }
 
 function UpdatePlayersInRoom (strRoomCode)
 {
-    if (!mapRoomCodeToPlayers.has (strRoomCode))
+    let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+    if (!mapValue)
     {
         console.log ("Room " + strRoomCode + " does not exist in UpdatePlayersInRoom");
         return;
     }
 
-    let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
-    
     let updatePlayerData = new Object ();
     updatePlayerData.count = mapValue.count;
 
@@ -127,12 +154,13 @@ function UpdatePlayersInRoom (strRoomCode)
 //The start button is only visible to the host and should only be visible when there are atleast two people in the room
 function UpdateHostButtons (strRoomCode)
 {
-    if (!mapRoomCodeToPlayers.has (strRoomCode))
+    let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+    if (!mapValue)
     {
         console.log ("Room " + strRoomCode + " does not exist in UpdateHostButtons");
         return;
     }
-    let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+
     let bShowButtons = (mapValue.count >= 2) ? true : false;
     let socketId = mapValue.players[0].socketId;
     io.to(socketId).emit ("m_UpdateHostButtons", bShowButtons);
@@ -178,17 +206,15 @@ function CreateRoom (socket, strPlayerName) {
 
 function JoinRoom (socket, strRoomCode, strPlayerName) {
     console.log ("Client is trying to connect to room: " + strRoomCode);
-    //To do: check if room exists and is not full... If so join and add socket to the room (Also then send a brodcast message to the others)
-
-    if (!mapRoomCodeToPlayers.has(strRoomCode))
+    
+    let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+    if (!mapValue)
     {
         console.log ("Room " + strRoomCode + " does not exist");
         socket.emit ("m_JoinRoomFail", "Room does not exist");
         return;
     }
 
-    let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
-    
     if (mapValue.count >= nMaxPlayersPerRoom)
     {
         console.log ("Room " + strRoomCode + " is full");
