@@ -1,10 +1,9 @@
 
+/////          Public data.. Gets set in Init
 let io;
 
-module.exports.Init = function(_io) {
-    io=_io;
-}
 
+/////          Local Data
 //Map of room code to player objects
 let mapRoomCodeToPlayers = new Map();
 let mapSocketIdToRoomCode = new Map();
@@ -12,6 +11,44 @@ let mapSocketIdToRoomCode = new Map();
 const nMaxRoomsAllowed = 2;
 const nMaxPlayersPerRoom = 8;
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////                              Logging
+
+const fs = require ('fs');
+
+// 0:None
+// 1:Critical
+// 2:Error
+// 3:Warning
+// 4:Info
+// 5:Trace
+const LogCritical = 1;
+const LogError    = 2;
+const LogWarn     = 3;
+const LogInfo     = 4;
+const LogTrace    = 5;
+
+const nLogLevel = LogTrace;
+const strLogfilePath = "./Log/mainMenu.log"
+fs.writeFileSync (strLogfilePath, "");  //This is to delete the previous contents of the log file
+
+const logFile = fs.createWriteStream(strLogfilePath, {flags:'a'});  //flags is for append mode
+
+
+function Log (level, strMessage) {
+    if (level <= nLogLevel) 
+    {
+        let str = level + ": " + strMessage + "\n";
+        logFile.write (str);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+//Public API
+module.exports.Init = function(_io) {
+    io=_io;
+}
 
 module.exports.OnNewConnection = function (socket) {
     console.log ("New Connection in main menu: " + socket.id);
@@ -38,6 +75,13 @@ module.exports.OnNewConnection = function (socket) {
     })
 }
 
+
+
+
+
+
+
+/////    Local functions
 function KickPlayerFromRoom (socketRoom, nPlayerIndex)
 {
     //cannot kick host ie index 0
@@ -68,7 +112,6 @@ function LeaveRoom (socket, strOptionalMsgIndividual) {
         console.log ("Socket tried to leave but is not registered in the socket map: " + socket.id);
         return;
     }
-    console.log ("Room Code where player is leaving: " + roomCode);
     
     let mapValue = mapRoomCodeToPlayers.get (roomCode);
     if (!mapValue)
