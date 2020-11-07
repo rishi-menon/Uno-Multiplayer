@@ -5,15 +5,21 @@ const strDomain = window.location.toString();
 //temp
 console.log("Domain: " + strDomain);
 
-const socket = io(strDomain);
+const socket = io();
 
 socket.on("connect", () => {
         // console.log("connected");
 });
 
+socket.on("disconnect", () => {
+    ShowErrorMessage ("You have been disconnected. Please try again");
+})
+
 window.onload = function () {
         // console.log("Hi there");
 };
+
+const nMaxPlayersPerRoom = 8;
 
 ////////////////////////////////////////////////////////////////////////////////////
 ///////////////                  Elements
@@ -135,11 +141,17 @@ e_roomDlgCloseBtn.addEventListener ('click', () => {
 });
 
 socket.on ("m_LeaveRoom", (strMessage) => {
+    ShowErrorMessage (strMessage);
+});
+
+function ShowErrorMessage (strMessage) {
+    //Remove the popup room dialog if it was open
     e_roomDlg.style.display = "none"
     bCanClickMainMenuBtns = true;
     e_createRoomBtn.style.display = "flex";
     e_joinRoomBtn.style.display = "flex";
 
+    //show the error message
     if (strMessage !== "")
     {
         e_enterNameDlg.style.display = "flex";
@@ -151,7 +163,7 @@ socket.on ("m_LeaveRoom", (strMessage) => {
         e_enterName_error.textContent=strMessage;
         e_enterName_dlgTitle.textContent = "Error Message"
     }
-});
+}
 
 
 //Room was created successfully (parameter: string)
@@ -228,7 +240,7 @@ socket.on ("m_UpdatePlayersInRoom", (mapValue) => {
     }
 
     //Hide the remaining elements
-    for (; index < 4; index++)
+    for (; index < nMaxPlayersPerRoom; index++)
     {
         let strClassName = ".player" + index;
         const eParent = e_roomDlgPlayerContainer.querySelector(strClassName);
@@ -277,3 +289,6 @@ e_roomDlgKickPlayerBtns.forEach (element => {
 
     });
 })
+
+
+socket.emit ("m_CreateRoom", "Rishi");
