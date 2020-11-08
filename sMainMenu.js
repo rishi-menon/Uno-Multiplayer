@@ -28,7 +28,7 @@ const LogWarn     = 3;
 const LogInfo     = 4;
 const LogTrace    = 5;
 
-const nLogLevel = LogTrace;
+const nLogLevel = LogWarn;
 const strLogfilePath = "./Log/mainMenu.log"
 fs.writeFileSync (strLogfilePath, "");  //This is to delete the previous contents of the log file
 
@@ -51,10 +51,10 @@ module.exports.Init = function(_io) {
 }
 
 module.exports.OnNewConnection = function (socket) {
-    console.log ("New Connection in main menu: " + socket.id);
+    Log (LogTrace, "New Connection in main menu: " + socket.id);
 
     socket.on ('disconnect', () => {
-        console.log ("Disconnected: " + socket.id)
+        Log (LogTrace, "Disconnected: " + socket.id)
         LeaveRoom (socket);
     });
 
@@ -87,7 +87,7 @@ function KickPlayerFromRoom (socketRoom, nPlayerIndex)
     //cannot kick host ie index 0
     if (nPlayerIndex < 1 || nPlayerIndex > (nMaxPlayersPerRoom-1))
     {
-        console.log ("Invalid index for kick: " + nPlayerIndex);
+        Log (LogWarn, "Invalid index for kick: " + nPlayerIndex);
         return;
     }
     
@@ -109,14 +109,14 @@ function LeaveRoom (socket, strOptionalMsgIndividual) {
     let roomCode = mapSocketIdToRoomCode.get(socket.id);
     if (!roomCode)
     {
-        console.log ("Socket tried to leave but is not registered in the socket map: " + socket.id);
+        Log (LogInfo, "Socket tried to leave but is not registered in the socket map: " + socket.id);
         return;
     }
     
     let mapValue = mapRoomCodeToPlayers.get (roomCode);
     if (!mapValue)
     {
-        console.log ("Socket tried to leave but is not registered in the RoomCode map: " + roomCode);
+        Log (LogInfo, "Socket tried to leave but is not registered in the RoomCode map: " + roomCode);
         return;
     }
 
@@ -130,7 +130,7 @@ function LeaveRoom (socket, strOptionalMsgIndividual) {
         }
     }
     if (index === -1) {
-        console.log ("Could not find socket in the list of players");     
+        Log (LogWarn, "Could not find socket in the list of players");     
         return;
     }
 
@@ -171,7 +171,7 @@ function UpdatePlayersInRoom (strRoomCode)
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
     if (!mapValue)
     {
-        console.log ("Room " + strRoomCode + " does not exist in UpdatePlayersInRoom");
+        Log (LogWarn, "Room " + strRoomCode + " does not exist in UpdatePlayersInRoom");
         return;
     }
 
@@ -194,7 +194,7 @@ function UpdateHostButtons (strRoomCode)
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
     if (!mapValue)
     {
-        console.log ("Room " + strRoomCode + " does not exist in UpdateHostButtons");
+        Log (LogWarn, "Room " + strRoomCode + " does not exist in UpdateHostButtons");
         return;
     }
 
@@ -204,7 +204,7 @@ function UpdateHostButtons (strRoomCode)
 }
 
 function CreateRoom (socket, strPlayerName) {
-    console.log (strPlayerName + " tried to create a room: " + socket.id);
+    Log (LogTrace, strPlayerName + " tried to create a room: " + socket.id);
 
     if (mapRoomCodeToPlayers.size >= nMaxRoomsAllowed)
     {
@@ -242,19 +242,19 @@ function CreateRoom (socket, strPlayerName) {
 }
 
 function JoinRoom (socket, strRoomCode, strPlayerName) {
-    console.log ("Client is trying to connect to room: " + strRoomCode);
+    Log (LogTrace, "Client is trying to connect to room: " + strRoomCode);
     
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
     if (!mapValue)
     {
-        console.log ("Room " + strRoomCode + " does not exist");
+        Log (LogTrace, "Room " + strRoomCode + " does not exist");
         socket.emit ("m_JoinRoomFail", "Room does not exist");
         return;
     }
 
     if (mapValue.count >= nMaxPlayersPerRoom)
     {
-        console.log ("Room " + strRoomCode + " is full");
+        Log (LogTrace, "Room " + strRoomCode + " is full");
         socket.emit ("m_JoinRoomFail", "Room is full");
         return;
     }

@@ -15,6 +15,5 @@ mainMenuObj.Init(io);
 
 
 function OnNewConnection(socket) {
-    console.log ("New Connection: " + socket.id);
     mainMenuObj.OnNewConnection (socket);
 }
