@@ -10,7 +10,7 @@ app.use ('/', express.static('public'))
 io.sockets.on('connection', OnNewConnection)
 
 
-const mainMenuObj = require("./mainMenu.js");
+const mainMenuObj = require("./sMainMenu.js");
 mainMenuObj.Init(io);
 
 

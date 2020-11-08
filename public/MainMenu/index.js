@@ -272,7 +272,7 @@ socket.on ("m_UpdateHostButtons", (bShowButtons) => {
 
 e_roomDlgStartGameBtn.addEventListener ("click", () => {
     console.log("Start Game"); 
-    // window.location.href = "http://localhost:3000"; 
+    window.location.href = "http://localhost:3000/game.html"; 
 })
 
 
@@ -289,6 +289,3 @@ e_roomDlgKickPlayerBtns.forEach (element => {
 
     });
 })
-
-
-socket.emit ("m_CreateRoom", "Rishi");
