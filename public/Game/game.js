@@ -1,4 +1,4 @@
+"use strict"
 
-GenerateCard ("Hi There");
 
-
+UC_AddCard (uc_players[0], "red-1");
