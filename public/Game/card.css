@@ -1,0 +1,118 @@
+/* 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////            Horizontal
+////////////////////////////////////////////////////////////////////////////////
+*/
+.playerCtnHor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* height: 90%; */
+}
+
+.playerCtnHor.up {
+    flex-direction: column;
+}
+
+.playerCtnHor.down {
+    flex-direction: column;
+}
+
+.cardCtnHor {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+}
+.cardCtnHor img {
+    margin: 0 var(--negCardMarginHor);
+    max-height: var(--hor-max-height);
+    transition: margin 0.4s;
+}
+
+.playerCtnHor.up .cardCtnHor img{
+    transform: rotate(180deg);
+}
+.cardCtnHor img:first-child {
+    margin-left: 0rem;
+}
+.cardCtnHor img:hover {
+    margin-right: 1rem;
+} 
+/* The css :last-child has to be below :hover so that the last card does not get any extra margin when the user places the mouse on the last card.. It cancels out the effect of the :hover for the last-child */
+.cardCtnHor img:last-child {
+    margin-right: 0rem;
+}
+
+.playerCtnHor p {
+    font-size: 22px;
+}
+/* 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////            Vertical
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+.playerCtnVer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* height: 90%; */
+}
+
+.playerCtnVer.left {
+    flex-direction: column;
+    /* flex-direction: row-reverse; */
+}
+
+.playerCtnVer.right {
+    flex-direction: column;
+    /* flex-direction: row; */
+}
+
+.cardCtnVer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+}
+.cardCtnVer img {
+    margin: var(--negCardMarginVer) 0;
+    max-width: var(--ver-max-width);
+
+    transition: margin 0.4s;
+
+    /* transform: rotate(180deg); */
+}
+
+.playerCtnVer.left .cardCtnVer img {
+    transform: rotate(180deg);
+}
+
+.cardCtnVer img:first-child {
+    margin-top: 0rem;
+}
+.cardCtnVer img:hover {
+    margin-bottom: 1rem;
+} 
+/* The css :last-child has to be below :hover so that the last card does not get any extra margin when the user places the mouse on the last card.. It cancels out the effect of the :hover for the last-child */
+.cardCtnVer img:last-child {
+    margin-bottom: 0rem;
+}
+
+.playerCtnVer p {
+    font-size: 22px;
+}
+
+/* 
+////////////////////////////////////////////////////////////////////
+/////////////////////     Middle Middle (ie Deck)
+////////////////////////////////////////////////////////////////////
+*/
+
+.middleMiddle img {
+    max-width: var(--deck-max-width);
+
+    box-sizing: content-box;
+    padding: 1rem 1rem;
+}

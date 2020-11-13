@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uno</title>
+    <link rel="stylesheet" href="./Game/constants.css" />
     <link rel="stylesheet" href="./Game/game.css" />
     <link rel="stylesheet" href="./Game/card.css" />
     <link
@@ -13,6 +14,111 @@
 </head>
 
 <body>
-    <h1>Redirect worked</h1>
+<main>
+<div class="main">
+    
+    <section class="up">
+        <div class="playerCtnHor up player0">
+            <div class="cardCtnHor">
+                <img src="Game/Images/bottom-blue-0.svg">
+                <img src="Game/Images/bottom-blue-1.svg">
+                <img src="Game/Images/bottom-black-back.svg">
+            </div>
+            <p>Rishi: 110 points</p>
+        </div>
+
+        <div class="playerCtnHor up player1">
+            <div class="cardCtnHor">
+                <img src="Game/Images/bottom-blue-0.svg">
+                <img src="Game/Images/bottom-blue-1.svg">
+                <img src="Game/Images/bottom-black-back.svg">
+            </div>
+            <p>Rishi: 110 points</p>
+        </div>
+    </section>
+
+
+
+
+
+
+
+    <section class="middle">
+        <div class="middleLeft">
+            <div class="playerCtnVer left player1">
+                <div class="cardCtnVer">
+                    <img src="Game/Images/right-blue-0.svg">
+                    <img src="Game/Images/right-blue-1.svg">
+                    <img src="Game/Images/right-black-back.svg">
+                </div>
+                <p>Rishi: 110 points</p>
+            </div>
+        </div>
+
+
+
+        <div class="middleMiddle">
+            <img src="Game/Images/bottom-black-back.svg">
+            <img src="Game/Images/bottom-blue-draw2.svg">
+        </div>
+
+
+        
+        <div class="middleRight">
+            <div class="playerCtnVer right player1">
+                <div class="cardCtnVer">
+                    <img src="Game/Images/right-blue-0.svg">
+                    <img src="Game/Images/right-blue-1.svg">
+                    <img src="Game/Images/right-black-back.svg">
+                </div>
+                <p>Rishi: 110 points</p>
+            </div>
+            <div class="playerCtnVer right player1">
+                <div class="cardCtnVer">
+                    <img src="Game/Images/right-blue-0.svg">
+                    <img src="Game/Images/right-blue-1.svg">
+                    <img src="Game/Images/right-black-back.svg">
+                </div>
+                <p>Rishi: 110 points</p>
+            </div>
+            
+        </div>
+    </section>
+
+
+
+
+
+
+
+
+    <section class="down">
+        <div class="playerCtnHor down player0">
+            <div class="cardCtnHor">
+                <img src="Game/Images/bottom-blue-0.svg">
+                <img src="Game/Images/bottom-blue-1.svg">
+                <img src="Game/Images/bottom-black-back.svg">
+            </div>
+            <p>Rishi: 110 points</p>
+        </div>
+        <div class="playerCtnHor down player0">
+            <div class="cardCtnHor">
+                <img src="Game/Images/bottom-blue-0.svg">
+                <img src="Game/Images/bottom-blue-1.svg">
+                <img src="Game/Images/bottom-black-back.svg">
+            </div>
+            <p>Rishi: 110 points</p>
+        </div>
+    </section>
+
+    
+</div>
+</main>
+    
+<script language="javascript" src="/socket.io/socket.io.js"></script>
+
+<script language="javascript" src="./Game/card.js"></script>
+<script language="javascript" src="./Game/game.js"></script>
+
 </body>
 </html>

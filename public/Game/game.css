@@ -15,3 +15,78 @@ body {
     background-color: #2E2E2E;
     font-family: 'Montserrat', sans-serif;
 }
+
+main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 100vh;
+}
+
+.main {
+    background-color: #525464;    
+    height: 98%;
+    width: 98%;
+}
+
+/* 
+//////////////////////////////////////////////////////
+/////////////////           Up
+//////////////////////////////////////////////////////
+*/
+
+section.up, section.middle, section.down {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}
+
+section.up {
+    width: 100%;
+    height: var(--section-top-height);
+
+    padding: 0 10%;
+}
+
+section.down {
+    width: 100%;
+    height: var(--section-bottom-height);
+    padding: 0 10%;
+}
+
+/* 
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////                Middle
+////////////////////////////////////////////////////////////////////////////////////
+*/
+
+section.middle {
+    justify-content: space-between;
+
+    width: 100%;
+    height: var(--section-middle-height);
+    /* padding: 0rem 3rem; */
+
+}
+.middleLeft, .middleRight {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+
+    max-width: 30%;
+    height: 100%;
+    padding: 0rem 1rem;
+}
+
+.middleMiddle {
+    /* display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between; */
+
+}
+
+
