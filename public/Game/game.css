@@ -47,13 +47,18 @@ section.up {
     width: 100%;
     height: var(--section-top-height);
 
-    padding: 0 10%;
+    padding-top: 1rem;
+    padding-left: 10%;
+    padding-right: 10%;
 }
 
 section.down {
     width: 100%;
     height: var(--section-bottom-height);
-    padding: 0 10%;
+    
+    padding-bottom: 1rem;
+    padding-left: 10%;
+    padding-right: 10%;
 }
 
 /* 
