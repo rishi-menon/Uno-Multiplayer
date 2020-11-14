@@ -5,7 +5,7 @@
 const uc_strImagesDir = "Game/Images/";
 const uc_strImageExtension = ".svg";
 let uc_players = [];
-
+let uc_playerSelf;
 
 
 
@@ -22,9 +22,11 @@ function UC_CalculatePlayers() {
         uc_players[i] = document.querySelector(strClassName);
         if (!uc_players[i]) { console.log ("Error: Could not find class: " + strClassName); }
     }
+    uc_playerSelf = uc_players[0];
 };
 
 //Takes in a player object (html obj) and a string for the the card id (<color>-<type> eg: "red-5" or "blue-skip")
+// public
 function UC_AddCard(playerCtn, strCard) {
     if (!playerCtn || !strCard) { return; }    
 
@@ -38,7 +40,7 @@ function UC_AddCard(playerCtn, strCard) {
         newCard.src = uc_strImagesDir + "bottom-" + strCard + uc_strImageExtension;
 
         horCtn.appendChild(newCard);
-        UC_CardAddMetaData(newCard, strCard);
+        UCi_CardAddMetaData(newCard, strCard);
         return;
     }
 
@@ -49,7 +51,7 @@ function UC_AddCard(playerCtn, strCard) {
         newCard.src = uc_strImagesDir + "right-" + strCard + uc_strImageExtension;
 
         verCtn.appendChild(newCard);
-        UC_CardAddMetaData(newCard, strCard);
+        UCi_CardAddMetaData(newCard, strCard);
         return;
     }
 
@@ -59,7 +61,7 @@ function UC_AddCard(playerCtn, strCard) {
 }
 
 //Internal function called within this js file... Takes in a card object that was just added by UC_AddCard
-function UC_CardAddMetaData (eCard, strCard) {
+function UCi_CardAddMetaData (eCard, strCard) {
     const nIndexDash = strCard.indexOf('-');
     if (nIndexDash < 0)   { console.log("Invalid str: " + strCard); return; }
     
@@ -71,5 +73,43 @@ function UC_CardAddMetaData (eCard, strCard) {
     eCard.setAttribute("cardColor", strColor);
     eCard.setAttribute("cardType", strType);
 
-    //To do: Add event listener to the card to make margin 0 on mouse hover (Add that here)
+    //Check if player clicked on their own card
+    const ePlayerCtn = eCard.parentNode.parentNode;
+    
+    const bIsSelfCard = (ePlayerCtn === uc_playerSelf);
+    if (bIsSelfCard)
+    {
+        eCard.addEventListener ("click", () => {
+            UG_CardOnClick(eCard);
+        });
+    }
 }
+
+
+// public
+//Takes in a card element and removes it
+function UC_RemoveCard (eCard) {
+    if (!eCard) { console.log ("Invalid parameter..."); return; }
+    console.log (eCard);
+    eCard.parentNode.removeChild(eCard);
+}
+
+//public
+//Takes in a card element and adds/removes a higlight effect
+function UC_HighlightCard (eCard, bHighlight) {
+    if (!eCard) { console.log ("Invalid parameter..."); return; }
+
+    const strHighlightColor = "FFE793";
+    if (bHighlight === true)
+    {
+        eCard.style.boxShadow = "0px 0px 25px 6px #" + strHighlightColor;
+    }
+    else if (bHighlight === false)
+    {
+        eCard.style.boxShadow = "none";
+    }
+    else
+    {
+        console.log ("Invalid parameter...");  
+    }
+}  

@@ -36,9 +36,17 @@
 .cardCtnHor img:first-child {
     margin-left: 0rem;
 }
+/* To enable that effect when you zoom in on a card (Does it for all players)  */
+/* 
 .cardCtnHor img:hover {
     margin-right: 1rem;
+}  */
+
+.player0 .cardCtnHor img:hover {
+    margin-right: 1rem;
 } 
+
+
 /* The css :last-child has to be below :hover so that the last card does not get any extra margin when the user places the mouse on the last card.. It cancels out the effect of the :hover for the last-child */
 .cardCtnHor img:last-child {
     margin-right: 0rem;
@@ -93,9 +101,12 @@
 .cardCtnVer img:first-child {
     margin-top: 0rem;
 }
+
+/* To enable that effect when you zoom in on a card (Does it for all players)  */
+/* 
 .cardCtnVer img:hover {
     margin-bottom: 1rem;
-} 
+}  */
 /* The css :last-child has to be below :hover so that the last card does not get any extra margin when the user places the mouse on the last card.. It cancels out the effect of the :hover for the last-child */
 .cardCtnVer img:last-child {
     margin-bottom: 0rem;
@@ -117,9 +128,4 @@
 
     box-sizing: content-box;
     margin: 0rem 1rem;
-}
-
-.deck {
-    /* Highlight */
-    box-shadow: 0px 0px 25px 6px #FFE793;
 }

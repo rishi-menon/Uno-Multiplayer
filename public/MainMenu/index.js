@@ -1,9 +1,9 @@
 // const strDomain = 'http://localhost:3000';
 // const strDomain = 'https://rishi.loca.lt';
-const strDomain = window.location.toString();
+// const strDomain = window.location.toString();
 
 //temp
-console.log("Domain: " + strDomain);
+// console.log("Domain: " + strDomain);
 
 const socket = io();
 

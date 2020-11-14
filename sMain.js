@@ -13,7 +13,27 @@ io.sockets.on('connection', OnNewConnection)
 const mainMenuObj = require("./sMainMenu.js");
 mainMenuObj.Init(io);
 
+const gameObj = require("./sGame.js");
+gameObj.Init(io);
+
 
 function OnNewConnection(socket) {
-    mainMenuObj.OnNewConnection (socket);
+
+    let strUrl = socket.handshake.headers.referer;
+    let nIndex = strUrl.lastIndexOf ("/");
+    if (nIndex === -1) { console.log ("Could not find / in url: " + strUrl); return; }
+    let strUrlEnd = strUrl.slice (nIndex+1, strUrl.length);
+
+    if (strUrlEnd === "" || strUrlEnd === "index.html")
+    {
+        mainMenuObj.OnNewConnection (socket);
+    }
+    else if (strUrlEnd === "game.html")
+    {
+        gameObj.OnNewConnection (socket);
+    }
+    else{
+        console.log ("Unknown Url: " + strUrlEnd);
+    }
+
 }
