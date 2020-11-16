@@ -28,6 +28,7 @@ main {
     background-color: #525464;    
     height: 98%;
     width: 98%;
+    position: relative;
 }
 
 /* 
@@ -87,11 +88,28 @@ section.middle {
 }
 
 .middleMiddle {
-    /* display: flex;
+    display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between; */
-
+    justify-content: space-between;
 }
 
+.direction.clockwise {
+    transform: scaleX(1);
 
+    /* -webkit-transition: 3s;
+    -moz-transition: 3s;
+    -ms-transition: 3s;
+    -o-transition: 3s; */
+    transition: 0.5s;
+}
+
+.direction.anticlockwise {
+    transform: scaleX(-1);
+
+    /* -webkit-transition: 3s;
+    -moz-transition: 3s;
+    -ms-transition: 3s;
+    -o-transition: 3s; */
+    transition: 0.5s;
+}

@@ -113,3 +113,27 @@ function UC_HighlightCard (eCard, bHighlight) {
         console.log ("Invalid parameter...");  
     }
 }  
+
+//public
+// Takes in a boolean for the direction
+function UC_SetDirection (bIsClockwise)
+{
+    const ele = document.querySelector (".direction");
+    if (!ele) { console.log ("Something went wrong"); return; }
+
+    if (bIsClockwise === true)
+    {
+        ele.classList.remove ("anticlockwise");
+        ele.classList.add ("clockwise")
+    }
+    else if (bIsClockwise === false)
+    {
+        ele.classList.remove ("clockwise")
+        ele.classList.add ("anticlockwise");
+    }
+    else
+    {
+        console.log ("Something went wrong"); 
+        return;
+    }
+}

@@ -1,0 +1,121 @@
+/*
+////////////////////////////////////////////////////////////////////////////////
+//////////                Allow player dlg
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+
+.allowDlg {
+    position: absolute;
+    display: none;  /* Set this to none initially so the dlg doesnt show up*/
+    
+    flex-direction: column;
+    align-items: center;
+    /* justify-content: space-between; */
+
+    left: 5%;
+    top: 5%;
+    min-height: 7rem;
+    min-width: 15rem;
+    /* transform: translateX(50%); */
+    
+    max-width: 25vw;    /* Prevent the allow message Dlg from getting too too large*/
+
+    background: #1B262C;
+    box-shadow: 0px 0px 5px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* 
+////////////////////////////////////
+////////////     Header
+////////////////////////////////////
+*/
+.allowDlg_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.4rem 0rem;
+    background: #0F4C75;
+    margin-bottom: 0.5rem;
+}
+
+.allowDlg_header p {
+    padding-left: 0.8rem;
+    font-size: 20px;
+    font-weight: bold;
+    color: #efefef;
+}
+
+.allowDlg_CloseBtn {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    
+    background: #D31C1C;
+    box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.25);
+    margin: 0 0.5rem;
+    transition: background 0.15s;
+}
+
+.allowDlg_CloseBtn:hover {
+    background: #FFAAAA;
+}
+
+
+.allowDlg_msg {
+    display: inline;
+    font-size: 18px;
+    color: #efefef;
+    text-align: center;
+
+    padding: 1rem 1rem;
+}
+/* 
+////////////////////////////////////
+////////////     Buttons
+////////////////////////////////////
+*/
+
+.allowDlg_btnCtn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    padding: 0.5rem 2rem;
+}
+
+/* Only butttons */
+.allowDlg_Btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 2rem;
+    
+
+    border-radius: 5rem;
+}
+
+.allowDlg_BtnAllow {
+    background: #37AD00;
+    cursor: default;
+    transition: background 0.1s;
+}
+.allowDlg_BtnAllow:hover {
+    background: #92E26C;
+}
+.allowDlg_BtnDeny {
+    background: #B80A00;
+    cursor: default;
+    transition: background 0.1s;
+}
+.allowDlg_BtnDeny:hover {
+    background: #FF8D86;
+}
+.allowDlg_BtnAllow p, .allowDlg_BtnDeny p  {
+    color: #efefef;
+    font-weight: bold;
+    font-size: 20px;
+}

@@ -1,0 +1,140 @@
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//////////                    Score board
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+.scoreDlg {
+    position: absolute;
+    display: none;  /* None so that it is not rendered initially */
+
+    flex-direction: column;
+    align-items: center;
+    /* justify-content: space-between; */
+
+    left: 50%;
+    top: 60%;
+    min-height: 20rem;
+    min-width: 35rem;
+
+    transform: translate(-50%, -50%);
+
+    background: #1B262C;
+    box-shadow: 0px 0px 5px 8px rgba(0, 0, 0, 0.25);
+}
+
+/*
+////////////////////////////////
+//////////  Header
+////////////////////////////////
+*/
+.scoreDlg .scoreDlg_Header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.0rem;
+
+    width: 100%;
+    min-height: 3rem;
+    background: #082D46;
+    box-shadow: 0px 4px 3px 1px rgba(0, 0, 0, 0.25);
+}
+
+.scoreDlg .scoreDlg_Header p {
+    font-size: 25px;
+    padding: 0rem 1rem;
+    color: #efefef;
+}
+
+.scoreDlg .scoreDlg_Header .scoreDlg_CloseBtn {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+
+    background: #D31C1C;
+    box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.25);
+    margin: 0 0.5rem;
+    transition: background 0.15s
+}
+.scoreDlg .scoreDlg_Header .scoreDlg_CloseBtn:hover {
+    background: #FFAAAA;
+}
+/*
+////////////////////////////////
+//////////  Score - Players
+////////////////////////////////
+*/
+
+.scoreDlg_playersCtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    /* height: 80%; */
+    width: 100%;
+}
+
+.scoreDlg_player {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+
+    width: 45%; /* Note: this could be 100% as well so that it occupies the entire screen*/
+    background: #0F4C75;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    padding: 0.4rem 0.4rem;
+    margin: 0px 10px;
+    margin-bottom: 10px;
+}
+
+.scoreDlg_row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.scoreDlg_playersCtn .scoreDlg_player p {
+    font-size: 20px;
+    text-align: center;
+    color: #efefef;
+}
+
+/*
+////////////////////////////////
+//////////  Next round
+////////////////////////////////
+*/
+
+.score_nextBtn {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    bottom: 0.5rem;
+    padding: 1rem 1rem;
+
+    background: #3282B8;
+    border-radius: 30px;
+    min-width: 10rem;
+
+    transition: background 0.15s;
+}
+
+.score_nextBtn p {
+    padding: 0rem 0.5rem;
+    font-size: 22px;
+    cursor: default;
+    color: #efefef;
+}
+
+.score_nextBtn:hover {
+    background: #58A6DB;
+}

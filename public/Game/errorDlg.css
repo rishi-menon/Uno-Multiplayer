@@ -1,0 +1,71 @@
+/* 
+////////////////////////////////////////////////////////////////////////////////////
+/////////////////                 Error message Dlg                               
+////////////////////////////////////////////////////////////////////////////////////
+*/
+
+.errorDlg {
+    position: absolute;
+    display: none;  /* Set this to none initially so the dlg doesnt show up*/
+    flex-direction: column;
+
+    align-items: center;
+    /* justify-content: space-between; */
+
+    left: 50%;
+    top: 55%;
+    min-height: 7rem;
+    min-width: 15rem;
+    transform: translateX(-50%);
+
+    background: #1B262C;
+    box-shadow: 0px 0px 5px 8px rgba(0, 0, 0, 0.25);
+}
+
+.errorDlg_msg {
+    display: flex;
+    font-size: 18px;
+    color: #FF7070;
+    text-align: left;
+
+    padding: 0.7rem 0;
+
+    max-width: 25vw;    /* Prevent the error message from getting too too large*/
+}
+/*
+////////////////////////////////
+//////////  Close button
+////////////////////////////////
+*/
+
+.errorDlg_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.4rem 0rem;
+    background: #0F4C75;
+    margin-bottom: 0.5rem;
+}
+
+.errorDlg_header p {
+    padding-left: 0.8rem;
+    font-size: 20px;
+    font-weight: bold;
+    color: #efefef;
+}
+
+.errorDlg_CloseBtn {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    
+    background: #D31C1C;
+    box-shadow: 0px 0px 3px 2px rgba(0, 0, 0, 0.25);
+    margin: 0 0.5rem;
+    transition: background 0.15s;
+}
+
+.errorDlg_CloseBtn:hover {
+    background: #FFAAAA;
+}

@@ -134,11 +134,6 @@ main {
 //////////                 Animations for Logo
 ////////////////////////////////////////////////////////////////////////////////
 */
-@keyframes animTemp {
-    0% { transform: rotate(0deg); }
-    50% { transform: rotate(180deg); }
-    100% { transform: rotate(360deg); }
-}
 
 @keyframes animLogoRed {
     0%   { top: var(--animationOutPos);     }

@@ -6,7 +6,13 @@
     <title>Uno</title>
     <link rel="stylesheet" href="./Game/constants.css" />
     <link rel="stylesheet" href="./Game/game.css" />
+    
+    <link rel="stylesheet" href="./Game/errorDlg.css" />
+    <link rel="stylesheet" href="./Game/scoreBoard.css" />
+    <link rel="stylesheet" href="./Game/allowPlayer.css" />
+
     <link rel="stylesheet" href="./Game/card.css" />
+
     <link
             href="https://fonts.googleapis.com/css2?family=Merienda&family=Montserrat&display=swap"
             rel="stylesheet"
@@ -66,8 +72,9 @@
 
 
         <div class="middleMiddle">
-            <img src="Game/Images/bottom-black-back.svg">
-            <img src="Game/Images/bottom-blue-draw2.svg">
+            <img class="deckCard"            src="Game/Images/bottom-black-back.svg">
+            <img class="currentCard"           src="Game/Images/bottom-blue-draw2.svg">
+            <img class="direction clockwise"         src="Game/Images/clockwise.svg">
         </div>
 
 
@@ -119,10 +126,116 @@
         </div>
     </section>
 
+    <!-- 
+        ///////////////////////////////////////////////////////////////////////////
+        ///////////////               Dialog - Errors
+        ///////////////////////////////////////////////////////////////////////////
+     -->
+     
+    <section class="errorDlg">
+        <div class="errorDlg_header">
+            <p>Error Message</p>
+            <div class="errorDlg_CloseBtn"></div>
+        </div>
+        <p class="errorDlg_msg">Error</p>
+    </section>
+
+    <!-- 
+        ///////////////////////////////////////////////////////////////////////////
+        ///////////////               Dialog - Scoreboard
+        ///////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    <section class="scoreDlg">
+        <div class="scoreDlg_Header">
+            <p>Score Board</p>
+            <div class="scoreDlg_CloseBtn"></div>
+        </div>
+
+        <div class="scoreDlg_playersCtn">
+            <div class="scoreDlg_row">
+                <div class="scoreDlg_player score_player0">
+                    <p class="scoreDlg_playerName"></p>
+                    <p class="scoreDlg_playerScore"></p>
+                </div>
+                <div class="scoreDlg_player score_player1">
+                    <p class="scoreDlg_playerName"></p>
+                    <p class="scoreDlg_playerScore"></p>
+                </div>
+            </div>
+
+            <div class="scoreDlg_row">
+                <div class="scoreDlg_player score_player2">
+                    <p class="scoreDlg_playerName"></p>
+                    <p class="scoreDlg_playerScore"></p>
+                </div>
+                <div class="scoreDlg_player score_player3">
+                    <p class="scoreDlg_playerName"></p>
+                    <p class="scoreDlg_playerScore"></p>
+                </div>
+            </div>
+
+            <div class="scoreDlg_row">
+                <div class="scoreDlg_player score_player4">
+                    <p class="scoreDlg_playerName"></p>
+                    <p class="scoreDlg_playerScore"></p>
+                </div>
+                <div class="scoreDlg_player score_player5">
+                    <p class="scoreDlg_playerName"></p>
+                    <p class="scoreDlg_playerScore"></p>
+                </div>
+            </div>
+
+            <div class="scoreDlg_row">
+                <div class="scoreDlg_player score_player6">
+                    <p class="scoreDlg_playerName"></p>
+                    <p class="scoreDlg_playerScore"></p>
+                </div>
+                <div class="scoreDlg_player score_player7">
+                    <p class="scoreDlg_playerName"></p>
+                    <p class="scoreDlg_playerScore"></p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="score_nextBtn">
+            <p>Next Round</p>
+        </div>
+    </section>
+
+     <!-- 
+        ///////////////////////////////////////////////////////////////////////////
+        ///////////////         Dialog - Allow players to join room
+        ///////////////////////////////////////////////////////////////////////////
+     -->
+     
+    <section class="allowDlg">
+        <div class="allowDlg_header">
+            <p>Error Message</p>
+            <div class="allowDlg_CloseBtn"></div>
+        </div>
+
+        <p class="allowDlg_msg">Player <span class="allowDlg_playerName">Rishi</span> is trying to join the room</p>
+       
+
+
+        <div class="allowDlg_btnCtn">
+            <div class="allowDlg_BtnAllow allowDlg_Btn">
+                <p>Allow</p>
+            </div>
+            <div class="allowDlg_BtnDeny allowDlg_Btn">
+                <p>Deny</p>
+            </div>
+        </div>
+    </section>
+
     
+
 </div>
 </main>
-    
+
 <script language="javascript" src="/socket.io/socket.io.js"></script>
 
 <script language="javascript" src="./Game/card.js"></script>
