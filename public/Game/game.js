@@ -5,6 +5,9 @@ const ug_nGenericTimeout = 3500;    //ms
 let ug_bInitJoinRoom = false;
 let ug_bInitJoinRoomAlreadyFailed = false;
 
+// Once you disconnect you shouldnt reconnect again
+let ug_bPlayerDisconnected = false;
+
 // let ug_currentCard;
 // let ug_bSelfTurn = false;
 
@@ -12,11 +15,25 @@ const nRoundsToWin = 4;
 const nMaxPlayers = 8;
 
 socket.on("connect", () => {
-    console.log("connected");
-    ug_bInitJoinRoom = false;
-    socket.emit("g_InitJoinRoom", ug_strJoinCode);
-    
-    setTimeout (UGi_InitJoinRoomFailed, ug_nGenericTimeout, "Server did not respond in time")
+    if (!ug_bPlayerDisconnected)
+    {
+        console.log("connected");
+        ug_bInitJoinRoom = false;
+        socket.emit("g_InitJoinRoom", ug_strJoinCode);
+        
+        setTimeout (UGi_InitJoinRoomFailed, ug_nGenericTimeout, "Server did not respond in time");
+
+        //Test... Keep the socket open ?
+        setInterval (() => {
+            socket.emit ("random_doesNotExist");
+        }, 500);
+    }
+});
+
+socket.on("disconnect", () => {
+    UGi_DisplayError ("You disconnected from the room");
+    console.log ("Disconnected");
+    ug_bPlayerDisconnected = true;
 });
 
 socket.on ("g_InitJoinRoomSuccess", () => {
@@ -37,8 +54,10 @@ function UGi_InitJoinRoomFailed (strMessage) {
     if (!ug_bInitJoinRoom && !ug_bInitJoinRoomAlreadyFailed) {
         //The server did not respond back/ The InitJoinRoom failed
         ug_bInitJoinRoomAlreadyFailed = true;
-        console.log ("Server did not respond in time");
-        //To do: failed message here
+        // console.log ("Server did not respond in time");
+        
+        UGi_DisplayError (strMessage);
+
     }
 }
 
@@ -63,7 +82,6 @@ socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
     for (let i = 0; i < data.count; i++)
     {
         let nServerIndex = Number(strPlayerOrderRearrange[i]);
-
         const curEle = uc_players[clientIndex[i]];
 
         curEle.style.display = "flex";
@@ -139,10 +157,31 @@ function UGi_SetScoreBoardDetails (data, strRoomCode) {
 }
 //////////
 
+//If strMessage is "" then the dialog is hidden
+function UGi_DisplayError (strMessage)
+{
+    const errorDlg = document.querySelector (".errorDlg");
+    if (!errorDlg) { console.log ("Error..."); return; }
+
+    if (strMessage == "")
+    {
+        errorDlg.style.display = "none";
+        return;
+    }
+    
+    errorDlg.style.display = "flex";
+    const eMessage = errorDlg.querySelector(".errorDlg_msg");
+    if (!eMessage) { console.log ("Error..."); return; }
+
+    eMessage.textContent = strMessage;
+}
+
 //public
 //function gets called when the player clicks on their OWN card
 function UG_CardOnClick(eCard) {
-    console.log ("Clicked on card");
+    if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot click on card"); return; }
+    console.log(eCard)
+    // console.log ("Clicked on card");
 
     // UC_RemoveCard (eCard);
 }

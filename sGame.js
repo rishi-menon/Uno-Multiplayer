@@ -46,6 +46,7 @@ let mapRoomCodeToPlayers = new Map();
 let mapSocketIdToRoomCode = new Map();
 
 const nMaxPlayersInRoom = 8;
+const nInitialCards = 7;
 
 const cardGenerator = require ("./sCardGenerator.js");
 
@@ -80,17 +81,28 @@ function StartNextRound (socket) {
 
     const strRoomCode = mapSocketIdToRoomCode.get (socket.id);
     if (!strRoomCode) { Log (LogWarn, "Socket does not exist in map while starting next round"); return; }
+    
+    const mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+    if (!mapValue) { Log (LogWarn, "room does not exist in player map while starting next round"); return; }
+    
+    if (mapValue.bRoundStarted === true) { Log (LogWarn, "Cannot start round... Round is already started"); return; }
 
-    UpdatePlayerNum (strRoomCode, true, true);
+    mapValue.bRoundStarted = true;
+
+    UpdatePlayerNum (strRoomCode, nInitialCards, true);
     io.in(strRoomCode).emit("g_StartNextRoundSuccess");
 }
 
 function LeaveRoom (socket) {
+    Log (LogTrace, "Leaving:" + socket.id);
+
     let strRoomCode = mapSocketIdToRoomCode.get (socket.id);
     if (!strRoomCode) { Log (LogWarn, "socket leave room: does not exist in the socketId map"); return; }
 
     let mapPlayers = mapRoomCodeToPlayers.get (strRoomCode);
     if (!mapPlayers) { Log (LogWarn, "socket leave room: does not exist in the player map"); return; }
+
+    console.log ("Leaving1:" + socket.id);
 
     let nClientIndex = -1;
     for (let i = 0; i < mapPlayers.count; i++)
@@ -118,13 +130,17 @@ function LeaveRoom (socket) {
 
     if (mapPlayers.count == 0)
     {
+        console.log ("Leaving2a:" + socket.id);
         //All players left.. Delete from map
         mapRoomCodeToPlayers.delete (strRoomCode);
     }
     else
     {
-        // UpdatePlayerNum (strRoomCode, false);
-        UpdateScoreBoard (strRoomCode);
+        console.log ("Leaving2b:" + socket.id);
+        
+        mapPlayers.strPlayerOrder =  RemovePlayerFromOrder (mapPlayers.strPlayerOrder, nClientIndex);
+        UpdatePlayerNum (strRoomCode, -1, false);  //Player couldve left while the game is ongoing... Preserve cards and preserve order
+        UpdateScoreBoard (strRoomCode);     //Player couldve left while the scoreboard is displayed
     }
 }
 
@@ -138,6 +154,13 @@ function InitJoinRoom (socket, strCode) {
 
     const nPlayerWins = 0;
 
+    //To do: temp code
+    const strLettersTemp = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    strPlayerName="";
+    for (let i = 0; i < 5; i++)
+    {
+        strPlayerName += strLettersTemp[Math.floor(Math.random() * 26)];
+    }
 
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
 
@@ -182,6 +205,7 @@ function InitJoinRoom (socket, strCode) {
     {
         bIsHost = false;
     }
+    
 
     
     if (bIsHost)
@@ -191,11 +215,10 @@ function InitJoinRoom (socket, strCode) {
 
     mapSocketIdToRoomCode.set (socket.id, strRoomCode);
     
-
-    
     socket.join (strRoomCode);
 
-    // UpdatePlayerNum (strRoomCode, false);
+    //Player can join only when the scoreboard is shown, so it isnt necessary to update the players (only the scoreboard)
+    // UpdatePlayerNum (strRoomCode, -1, true);
     UpdateScoreBoard (strRoomCode);
 }
 
@@ -222,7 +245,12 @@ function UpdateScoreBoard(strRoomCode)
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////                  Update Player Num (For when a new player joins or leaves)  
 
-function UpdatePlayerNum (strRoomCode, bRandomizeOrder, bGenerateCards) {
+//If nGenerateCards == -1, Cards are preserved and unmodified
+//If nGenerateCards == 0, Cards are delete
+//If nGenerateCards > 0,  the number of cards passed are generated for each player
+
+
+function UpdatePlayerNum (strRoomCode, nGenerateCards, bRandomizeOrder) {
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
     if (!mapValue) { Log(LogWarn, "Room code does not exist in the map in UpdatePlayerNum: " + strRoomCode); return; }
 
@@ -233,20 +261,23 @@ function UpdatePlayerNum (strRoomCode, bRandomizeOrder, bGenerateCards) {
     }
     else if (bRandomizeOrder === false)
     {
-        strPlayerOrder = GeneratePlayerOrderNonRandom (mapValue.count, mapValue.strPlayerOrder);
+        //Dont randomize order
+        strPlayerOrder = mapValue.strPlayerOrder;
+        // strPlayerOrder = GeneratePlayerOrderNonRandom (mapValue.count, mapValue.strPlayerOrder);
     }
     else { Log(LogWarn, "UpdatePlayerNum: second parameter should be a boolean: " + bRandomizeOrder + "..." + typeof(bRandomizeOrder)); return; }
-
-    if (bGenerateCards === true)
+    
+    //Generate cards if need be
+    if (nGenerateCards >= 0)
     {
-        const nInitialCards = 7;
         for (let i = 0; i < mapValue.count; i++) {
             let curPlayer = mapValue.players[i];
             if (curPlayer) { 
-                curPlayer.cards = cardGenerator.GetCards (nInitialCards);
+                curPlayer.cards = cardGenerator.GetCards (nGenerateCards);
             }
         }
     }
+
 
     mapValue.strPlayerOrder = strPlayerOrder;
 
@@ -282,25 +313,46 @@ function GeneratePlayerOrder (nPlayerCount)
 }
 
 //This function preserves the current order... The missing numbers are added at the end
-function GeneratePlayerOrderNonRandom (nPlayerCount, strPlayerOrder)
+// function GeneratePlayerOrderNonRandom (nPlayerCount, strPlayerOrder)
+// {
+//     let mapSeen = new Map();
+//     let strOrder = "";
+//     for (let i = 0; i < strPlayerOrder.length; i++) {
+//         let r = Number(strPlayerOrder[i]);
+//         if (r < nPlayerCount) {
+//             mapSeen.set (r, true);
+//             strOrder += strPlayerOrder[i];
+//         }
+//     }
+
+//     for (let i = 0; i < nPlayerCount; i++)
+//     {
+//         if (!mapSeen.has(i))
+//         {
+//             strOrder += i.toString();
+//         }
+//     }
+//     return strOrder;
+// }
+
+//Recalculates the strPlayerOrder in the event that a player leaves midgame... This preserves the order of the 
+function RemovePlayerFromOrder (strPlayerOrder, leftIndex)
 {
-    let mapSeen = new Map();
     let strOrder = "";
-    for (let i = 0; i < strPlayerOrder.length; i++) {
+    for (let i = 0; i < strPlayerOrder.length; i++)
+    {
         let r = Number(strPlayerOrder[i]);
-        if (r < nPlayerCount) {
-            mapSeen.set (r, true);
-            strOrder += strPlayerOrder[i];
+        if (r < leftIndex)
+        {
+            strOrder += r.toString();
         }
+        else if (r > leftIndex)
+        {
+            strOrder += (r-1).toString();
+        }
+        //If it is equal then that player left and does not need to be in the order anymore... The people higher than him will be shifted to the left in the players array and their server index will decrease by 1.
     }
 
-    for (let i = 0; i < nPlayerCount; i++)
-    {
-        if (!mapSeen.has(i))
-        {
-            strOrder += i.toString();
-        }
-    }
     return strOrder;
 }
 
