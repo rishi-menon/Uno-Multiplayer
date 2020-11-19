@@ -9,11 +9,7 @@ let uc_playerSelf;
 
 
 
-
 UC_CalculatePlayers();
-
-
-
 function UC_CalculatePlayers() {
     const nPlayerCount = 8;
     for (let i = 0; i < nPlayerCount; i++)
@@ -35,7 +31,7 @@ function UC_AddCard(playerCtn, strCard) {
 
     if (horCtn)
     {
-        console.log ("Added to horizontal");
+        // console.log ("Added to horizontal");
         const newCard = document.createElement("img");
         newCard.src = uc_strImagesDir + "bottom-" + strCard + uc_strImageExtension;
 
@@ -46,7 +42,7 @@ function UC_AddCard(playerCtn, strCard) {
 
     if (verCtn)
     {
-        console.log ("Added to vertical");
+        // console.log ("Added to vertical");
         const newCard = document.createElement("img");
         newCard.src = uc_strImagesDir + "right-" + strCard + uc_strImageExtension;
 
@@ -135,5 +131,44 @@ function UC_SetDirection (bIsClockwise)
     {
         console.log ("Something went wrong"); 
         return;
+    }
+}
+
+//public
+//PlayerDetails :
+//      string name
+//      int? winCount
+//      array cards
+// 
+function UC_SetPlayerDetails (player, playerDetails)
+{
+    if (!player || !playerDetails) { console.log ("Something went wrong"); return;}
+
+    player.querySelector("p").textContent = playerDetails.name;
+
+    UCi_RemoveAllCards (player);
+
+    for (let i = 0; i < playerDetails.cards.length; i++)
+    {
+        UC_AddCard (player, playerDetails.cards[i]);
+    }
+
+}
+
+function UCi_RemoveAllCards (playerCtn)
+{
+    const horCtn = playerCtn.querySelector (".cardCtnHor");
+    const verCtn = playerCtn.querySelector (".cardCtnVer");
+
+    let cardCtn;
+    if (horCtn)
+        cardCtn = horCtn;
+    else if (verCtn)
+        cardCtn = verCtn;
+    else
+        return;
+    
+    while (cardCtn.lastElementChild) {
+        cardCtn.removeChild(cardCtn.lastElementChild);
     }
 }

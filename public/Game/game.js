@@ -1,16 +1,15 @@
-"use strict"
-
-const socket = io();
-
-let ug_currentCard;
-let ug_bSelfTurn = false;
-
 let ug_strJoinCode = "SecretCode"
 
 const ug_nGenericTimeout = 3500;    //ms
-
 //Timeout booleans
 let ug_bInitJoinRoom = false;
+let ug_bInitJoinRoomAlreadyFailed = false;
+
+// let ug_currentCard;
+// let ug_bSelfTurn = false;
+
+const nRoundsToWin = 4;
+const nMaxPlayers = 8;
 
 socket.on("connect", () => {
     console.log("connected");
@@ -20,17 +19,125 @@ socket.on("connect", () => {
     setTimeout (UGi_InitJoinRoomFailed, ug_nGenericTimeout, "Server did not respond in time")
 });
 
+socket.on ("g_InitJoinRoomSuccess", () => {
+    ug_bInitJoinRoom = true;
+
+    //Show the scoreBoard
+    const scoreBoardDlg = document.querySelector (".scoreDlg");
+    if (!scoreBoardDlg) { console.log ("Error..."); return; }
+    scoreBoardDlg.style.display = "flex";
+});
+
+socket.on ("g_InitJoinRoomFailure", (strMessage) => {
+    UGi_InitJoinRoomFailed (strMessage);
+});
+
 //Note: This function will definately be called once by the setTimeout... It could potentially be called twice if it receives a message from the server
 function UGi_InitJoinRoomFailed (strMessage) {
-    if (!ug_bInitJoinRoom) {
+    if (!ug_bInitJoinRoom && !ug_bInitJoinRoomAlreadyFailed) {
         //The server did not respond back/ The InitJoinRoom failed
+        ug_bInitJoinRoomAlreadyFailed = true;
         console.log ("Server did not respond in time");
+        //To do: failed message here
     }
 }
 
+///////////////////////////////////////////////////////
+///////////              Update players in the room
 
-let edeck = document.querySelector (".deck");
-UC_AddCard (uc_players[0], "red-1");
+socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
+    uc_players.forEach(element => {
+        element.style.display = "none";
+    });
+
+    let nIndex = strPlayerOrder.indexOf (nServerIndex.toString());
+    if (nIndex == -1) { console.log ("Something went wrong"); return; }
+
+    let strStart = strPlayerOrder.slice (0, nIndex);
+    let strEnd = strPlayerOrder.slice (nIndex, strPlayerOrder.length);
+    
+    let strPlayerOrderRearrange = strEnd + strStart;
+    
+    let clientIndex = [0, 3, 1, 5, 2, 4, 6, 7];
+    
+    for (let i = 0; i < data.count; i++)
+    {
+        let nServerIndex = Number(strPlayerOrderRearrange[i]);
+
+        const curEle = uc_players[clientIndex[i]];
+
+        curEle.style.display = "flex";
+        UC_SetPlayerDetails (curEle, data.players[nServerIndex]);
+    }
+
+    const nEmptyData = {name: "", winCount: 0};
+    nEmptyData.cards = [];
+    for (let i = data.count; i < nMaxPlayers; i++)
+    {
+        const curEle = uc_players[clientIndex[i]];
+        curEle.style.display = "none";
+        UC_SetPlayerDetails (curEle, nEmptyData);
+    }
+});
+
+socket.on ("g_UpdateScoreBoard", (data, strRoomCode) => {
+    UGi_SetScoreBoardDetails (data, strRoomCode);
+});
+
+socket.on ("g_UpdateScoreBoard_ShowBtn", () => {
+    const scoreBoardNextRoundBtn = document.querySelector (".score_nextBtn");
+    if (!scoreBoardNextRoundBtn) { console.log ("Error..."); return; }
+    
+    scoreBoardNextRoundBtn.style.display = "flex"; 
+});
+
+socket.on ("g_UpdateScoreBoard_HideBtn", () => {
+    const scoreBoardNextRoundBtn = document.querySelector (".score_nextBtn");
+    if (!scoreBoardNextRoundBtn) { console.log ("Error..."); return; }
+    
+    scoreBoardNextRoundBtn.style.display = "none";
+});
+
+
+//////////
+// data:
+//      players :
+//          string name
+//          int? winCount
+//          array cards
+//      int count
+
+function UGi_SetScoreBoardDetails (data, strRoomCode) {
+    const scoreBoardDlg = document.querySelector (".scoreDlg");
+    if (!scoreBoardDlg || !data) { console.log ("Error..."); return; }
+
+    const scoreBoardDlg_RoomCode = scoreBoardDlg.querySelector (".scoreDlg_HeaderRight p");
+    scoreBoardDlg_RoomCode.textContent = strRoomCode;
+    
+    for (let i = 0; i < data.count; i++)
+    {
+        const curPlayer = data.players[i];
+        if (!curPlayer) { console.log ("Error..."); continue; }
+
+        const element = scoreBoardDlg.querySelector (".score_player" + i.toString());
+        if (!element) { console.log ("Error..."); continue; }
+
+        element.style.display = "flex";
+        const pchildren = element.querySelectorAll ("p");
+        //name
+        pchildren[0].textContent = curPlayer.name;
+        //wins
+        pchildren[1].textContent = curPlayer.winCount.toString() + " / " + nRoundsToWin.toString();
+    }
+
+    for (let i = data.count; i < nMaxPlayers; i++)
+    {
+        const element = scoreBoardDlg.querySelector (".score_player" + i.toString());
+        if (!element) { console.log ("Error..."); continue; }
+        element.style.display = "none";
+    }
+}
+//////////
 
 //public
 //function gets called when the player clicks on their OWN card
@@ -38,6 +145,4 @@ function UG_CardOnClick(eCard) {
     console.log ("Clicked on card");
 
     // UC_RemoveCard (eCard);
-
-    edeck.setAttribute("src", "Game/Images/bottom-blue-8.svg")
 }

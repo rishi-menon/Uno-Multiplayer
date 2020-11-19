@@ -48,7 +48,13 @@
     color: #efefef;
 }
 
-.scoreDlg .scoreDlg_Header .scoreDlg_CloseBtn {
+.scoreDlg_HeaderRight {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.scoreDlg .scoreDlg_HeaderRight .scoreDlg_CloseBtn {
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
@@ -58,7 +64,7 @@
     margin: 0 0.5rem;
     transition: background 0.15s
 }
-.scoreDlg .scoreDlg_Header .scoreDlg_CloseBtn:hover {
+.scoreDlg .scoreDlg_HeaderRight .scoreDlg_CloseBtn:hover {
     background: #FFAAAA;
 }
 /*
