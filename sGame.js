@@ -68,7 +68,6 @@ module.exports.OnNewConnection = function (socket) {
     });
 
     socket.on ("g_PlayerLeaveRoom", () => {
-        //To do
         LeaveRoom (socket);
     });
 
@@ -92,9 +91,47 @@ module.exports.OnNewConnection = function (socket) {
 ///////////////////////////////////////////////////////////////////////////
 
 
+//Helper function which is probably going to be used only once
+function h_CalculateNextPlayerTurn (mapValue, strCardColor, strCardType)
+{
+    //calculate index of current player in the order
+    const nStringIndexCur = mapValue.game.strPlayerOrder.indexOf (mapValue.game.nTurnIndex);
+    if (nStringIndexCur == -1) { Log (LogError, "PlayerEndedTurn: Couldnt find nStringIndexCur"); return; }
 
+    //Calculate who the next player is
+    let nStringIndexNew = nStringIndexCur;
+    nStringIndexNew += (mapValue.game.bClockwise) ? 1 : -1;
 
+    if (strCardType == "skip")
+    {
+        nStringIndexNew += (mapValue.game.bClockwise) ? 1 : -1;
+    }
 
+    //Check if it went out of bounds
+    while (nStringIndexNew < 0) {
+        nStringIndexNew += mapValue.count;
+    }
+    //Could use a modulo operation here instead but this will also work
+    while (nStringIndexNew >= mapValue.count) {
+        nStringIndexNew -= mapValue.count;
+    }
+
+    return Number(mapValue.game.strPlayerOrder[nStringIndexNew]);
+}
+
+function h_RemoveCardFromPlayer (player, strCard)
+{
+    const cards = player.cards;
+    for (let i = 0; i < cards.length; i++)
+    {
+        if (cards[i] == strCard)
+        {
+            cards.splice (i, 1);
+            return true;
+        }
+    }
+    return false;
+}
 
 function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
 {   
@@ -113,6 +150,7 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     
     if (!strCardCol || !strCardType) { Log(LogWarn, "PlayerEndedTurn: Invalid strCurrentCard2: " + strCurrentCard); return; }
 
+    //Programming error occured
     if (mapValue.count != mapValue.game.strPlayerOrder.length) {Log(LogWarn, "PlayerEndedTurn: Invalid player count or strPlayerOrder: " + mapValue.count + ".." + mapValue.game.strPlayerOrder); return;}
 
     //Safety checks over... ?
@@ -120,68 +158,29 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     //To do: temp.. delete 
     if (strCardCol != strCardCol.toLowerCase() || strCardType != strCardType.toLowerCase())
     {
+        //Programming error
         console.log ("This is very very bad!!..... It should be lower case: " + strCardCol + "-" + strCardType);
         return;
     }
-
 
 
     //Update the current card for the other players
     if (cardMeta.bCardThrown === true)
     {
         socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
-    }
-    
-    //reverse the direction before calculating who the next player is (Reverse only if that card was thrown)
-    if (cardMeta.bCardThrown === true && strCardType == "reverse")
-        mapValue.game.bClockwise = !mapValue.game.bClockwise;
-
-    //calculate index of current player in the order
-    const nIndexOrder = mapValue.game.strPlayerOrder.indexOf (mapValue.game.nTurnIndex);
-    if (nIndexOrder == -1) { Log (LogError, "PlayerEndedTurn: Couldnt find nIndexOrder"); return; }
-    
-
-    console.log ("CurrentOrder: " + mapValue.game.strPlayerOrder);
-    console.log ("CurrentPlayer: " + nIndexOrder);
-
-    //Calculate who the next player is
-    let newPlayerIndex = nIndexOrder;
-    newPlayerIndex += (mapValue.game.bClockwise) ? 1 : -1;
-    console.log ("newPlayerIndex1: " + newPlayerIndex);
-    if (strCardType == "skip")
-    {
-        newPlayerIndex += (mapValue.game.bClockwise) ? 1 : -1;
-        console.log ("newPlayerIndex2: " + newPlayerIndex);
-    }
-    while (newPlayerIndex < 0) {
-        newPlayerIndex += mapValue.count;
-    }
-    //Could use a modulo operation here instead but this should also work
-    while (newPlayerIndex >= mapValue.count) {
-        newPlayerIndex -= mapValue.count;
-    }
-    console.log ("newPlayerIndex3: " + newPlayerIndex);
-
-    const newPlayerServerIndex = Number(mapValue.game.strPlayerOrder[newPlayerIndex]);
-    mapValue.game.nTurnIndex = newPlayerServerIndex;
-
-    //The current player either picked up a card or discarded a card... If they picked up a card then the cards array is already up to date (because they need to request server to draw a card)
-    //If they threw a card then we need to update the cards array
-    if (cardMeta.bCardThrown === true)
-    {
-        const cardsArray = mapValue.players[nServerIndex].cards;
-        for (let i = 0; i < cardsArray.length; i++)
+        
+        //reverse the direction before calculating who the next player is (Reverse only if that card was thrown)
+        if (strCardType == "reverse")
         {
-            if (cardsArray[i] == strCurrentCard)
-            {
-                // console.log ("Removed card " + strCurrentCard + " from the player");
-                cardsArray.splice (i, 1);
-                break;
-            }
+            mapValue.game.bClockwise = !mapValue.game.bClockwise;
         }
+
+        //The current player either picked up a card or discarded a card... If they picked up a card then the cards array is already up to date (because they need to request the server to draw a card)
+        //If they threw a card then we need to update the cards array
+        h_RemoveCardFromPlayer (mapValue.players[nServerIndex], strCurrentCard);
     }
 
-    //Update all the other players now that the current player has picked a card/thrown a card
+    //Update all the other players now that the current player has picked a card/thrown a card.. Must be done after h_RemoveCardFromPlayer()
     {
         const playerData = mapValue.players[nServerIndex];
         const cardsArray = playerData.cards;
@@ -193,10 +192,12 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
         // console.log ("Updating other players");
         socket.to (strRoomCode).emit ("g_UpdateOtherPlayerCards", playerData.name, cardsData);
     }
+    
+    const nNextPlayerIndex = h_CalculateNextPlayerTurn (mapValue, strCardCol, strCardType);
+    mapValue.game.nTurnIndex = nNextPlayerIndex;
 
     //Start the next players turn
-    // console.log ("Turn: " + mapValue.players[newPlayerServerIndex].name);
-    io.in (strRoomCode).emit ("g_StartTurn", mapValue.players[newPlayerServerIndex].name);
+    io.in (strRoomCode).emit ("g_StartTurn", mapValue.players[nNextPlayerIndex].name);
 } 
 
 
@@ -314,14 +315,6 @@ function InitJoinRoom (socket, strCode) {
     let bIsHost = true;
 
     const nPlayerWins = 0;
-
-    //To do: temp code
-    // const strLettersTemp = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    // strPlayerName="";
-    // for (let i = 0; i < 5; i++)
-    // {
-    //     strPlayerName += strLettersTemp[Math.floor(Math.random() * 26)];
-    // }
 
 
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);

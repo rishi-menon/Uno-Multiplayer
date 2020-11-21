@@ -72,92 +72,22 @@ function UGi_InitJoinRoomFailed (strMessage) {
 ///////////////////////////////////////////////////////
 ///////////              Update players in the room
 
-function UGi_GenerateLocalClientIndex (nCount)
-{
-    let clientIndex = [];
-    //[0, 3, 1, 5, 2, 4, 6, 7]
-    switch (nCount)
-    {
-        case 1:
-        {
-            clientIndex.push(0);
-            break;
-        }
-        case 2:
-        {
-            clientIndex.push(0);
-            clientIndex.push(3);
-            break;
-        }
-        case 3:
-        {
-            clientIndex.push(0);
-            clientIndex.push(1);
-            clientIndex.push(3);
-            break;
-        }
-        case 4:
-        {
-            clientIndex.push(0);
-            clientIndex.push(1);
-            clientIndex.push(3);
-            clientIndex.push(5);
-            break;
-        }
-        case 5:
-        {
-            clientIndex.push(0);
-            clientIndex.push(1);
-            clientIndex.push(2);
-            clientIndex.push(3);
-            clientIndex.push(5);
-            break;
-        }
-        case 6:
-        {
-            clientIndex.push(0);
-            clientIndex.push(1);
-            clientIndex.push(2);
-            clientIndex.push(3);
-            clientIndex.push(5);
-            clientIndex.push(6);
-            break;
-        }
-        case 7:
-        {
-            clientIndex.push(0);
-            clientIndex.push(1);
-            clientIndex.push(2);
-            clientIndex.push(3);
-            clientIndex.push(4);
-            clientIndex.push(5);
-            clientIndex.push(6);
-            break;
-        }
-        case 8:
-        {
-            clientIndex.push(0);
-            clientIndex.push(1);
-            clientIndex.push(2);
-            clientIndex.push(3);
-            clientIndex.push(4);
-            clientIndex.push(5);
-            clientIndex.push(6);
-            clientIndex.push(7);
-            break;
-        }
-        default:
-        {
-            console.log ("Error... " + data.count);
-            break;
-        }
-    }
-    return clientIndex;
-}
+const ug_LocalClientMapping = [
+    [0],
+    [0,3],
+    [0,1,3],
+    [0,1,3,5],
+    [0,1,2,3,5],
+    [0,1,2,3,5,6],
+    [0,1,2,3,4,5,6],
+    [0,1,2,3,4,5,6,7],
+];
+
 socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
     uc_players.forEach(element => {
         element.style.display = "none";
     });
+    if (data.count <= 0) { console.log("Error..."); return; }
 
     let nIndex = strPlayerOrder.indexOf (nServerIndex.toString());
     if (nIndex == -1) { console.log ("Something went wrong"); return; }
@@ -167,7 +97,8 @@ socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
     
     let strPlayerOrderRearrange = strEnd + strStart;
     
-    let clientIndex = UGi_GenerateLocalClientIndex(data.count);
+    //-1 because room can never have 0 players.... It will always have atleast 1
+    let clientIndex = ug_LocalClientMapping[data.count-1];
 
     for (let i = 0; i < data.count; i++)
     {
@@ -224,19 +155,13 @@ socket.on ("g_StartTurn", (strPlayerTurn) => {
     {
         const eName = uc_players[i].querySelector("p");
         if (!eName) { continue; }
-
-        if (eName.textContent == strPlayerTurn) { ePlayerTurn = uc_players[i]; break; }
-    }
-
-    //Reset color
-    //To do: combine this bottom for loop with the one on top
-    for (let i = 0; i < nMaxPlayers; i++)
-    {
-        const eName = uc_players[i].querySelector("p");
-        if (!eName) { continue; }
-
+        //Reset color of the non current players turn
         eName.style.color = "#efefef";
+
+        if (!ePlayerTurn && eName.textContent == strPlayerTurn) { ePlayerTurn = uc_players[i]; }
     }
+
+    //Set current players turn to red after setting all the other players to white (for loop)
     ePlayerTurn.querySelector ("p").style.color = "#ff0000";
 
     //To do: Add better visuals for the current players turn
@@ -264,7 +189,7 @@ socket.on ("g_UpdateSelfCardsCount", (data) => {
 
 socket.on ("g_UpdateThrownCard", (strCurrentCard, cardMeta) => {
     console.log ("Updateeee");
-    //To do: If a wild card was thrown then show which color the other player selected inside the following function
+    //To do: If a wild card was thrown then show which color the other player selected inside the following function... Also if a wild card was thrown by another player then the selected colour should be highlighted or something to indicate which color
     UG_UpdateCurrentCard (strCurrentCard, cardMeta);
 });
 
@@ -423,14 +348,11 @@ function UGi_ThrowCardIsValid (strCardCol, strCardType, strCurrentCol, strCurren
 function UGi_EndTurn ()
 {
     if (ug_bSelfTurn !== true) { console.log ("Error..."); return; }
-
     ug_bSelfTurn = false;
 
     //Visual Stuff
     uc_playerSelf.querySelector ("p").style.color = "#efefef";
 
-    //To do: Send signal here to end turn
-    const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;
-    
+    const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;    
     socket.emit ("g_PlayerEndTurn", strCard, ug_strCurrentCardMeta);
 }
