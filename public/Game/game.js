@@ -100,20 +100,24 @@ socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
     //-1 because room can never have 0 players.... It will always have atleast 1
     let clientIndex = ug_LocalClientMapping[data.count-1];
 
+    let mapSeen = new Map();
     for (let i = 0; i < data.count; i++)
     {
-        let nServerIndex = Number(strPlayerOrderRearrange[i]);
+        mapSeen.set (clientIndex[i], true);
         const curEle = uc_players[clientIndex[i]];
-
         curEle.style.display = "flex";
+        
+        let nServerIndex = Number(strPlayerOrderRearrange[i]);
         UC_SetPlayerDetails (curEle, data.players[nServerIndex]);
     }
 
     const nEmptyData = {name: "", winCount: 0};
     nEmptyData.cards = [];
-    for (let i = data.count; i < nMaxPlayers; i++)
+    for (let i = 0; i < nMaxPlayers; i++)
     {
-        const curEle = uc_players[clientIndex[i]];
+        if (mapSeen.has (i))    continue;
+
+        const curEle = uc_players[i];
         curEle.style.display = "none";
         UC_SetPlayerDetails (curEle, nEmptyData);
     }
@@ -148,21 +152,31 @@ socket.on ("g_StartNextRoundSuccess", (strStartingCard) => {
     UG_UpdateCurrentCard (strStartingCard, null);
 });
 
-socket.on ("g_StartTurn", (strPlayerTurn) => {
-    console.log ("Turnn! : " + strPlayerTurn);
-    let ePlayerTurn = null;
+function UGi_GetPlayerFromName (strPlayerName)
+{
     for (let i = 0; i < nMaxPlayers; i++)
     {
-        const eName = uc_players[i].querySelector("p");
-        if (!eName) { continue; }
-        //Reset color of the non current players turn
-        eName.style.color = "#efefef";
-
-        if (!ePlayerTurn && eName.textContent == strPlayerTurn) { ePlayerTurn = uc_players[i]; }
+        const ele = uc_players[i].querySelector("p");
+        if (ele.textContent == strPlayerName) {
+             return uc_players[i];
+        }
     }
+    return null;
+}
+let ug_prevTurnPlayer = null;
 
+socket.on ("g_StartTurn", (strPlayerTurn) => {
+    
+    //Reset the previous players color back to 0 as it isnt their turn anymore
+    if (ug_prevTurnPlayer)
+    {
+        ug_prevTurnPlayer.querySelector("p").style.color = "#efefef";
+    }
+    
+    let ePlayerTurn = UGi_GetPlayerFromName (strPlayerTurn);
     //Set current players turn to red after setting all the other players to white (for loop)
     ePlayerTurn.querySelector ("p").style.color = "#ff0000";
+    ug_prevTurnPlayer = ePlayerTurn;
 
     //To do: Add better visuals for the current players turn
     if (ePlayerTurn === uc_playerSelf)
@@ -188,24 +202,20 @@ socket.on ("g_UpdateSelfCardsCount", (data) => {
 });
 
 socket.on ("g_UpdateThrownCard", (strCurrentCard, cardMeta) => {
-    console.log ("Updateeee");
+    console.log ("Update thrown card");
     //To do: If a wild card was thrown then show which color the other player selected inside the following function... Also if a wild card was thrown by another player then the selected colour should be highlighted or something to indicate which color
     UG_UpdateCurrentCard (strCurrentCard, cardMeta);
 });
 
 socket.on ("g_UpdateOtherPlayerCards", (strPlayerName, cardsData) => {
     console.log ("UpdateOtherPlayer");
-    let ePlayer = null;
-    for (let i = 0; i < nMaxPlayers; i++)
-    {
-        const eName = uc_players[i].querySelector("p");
-        if (!eName) { continue; }
-
-        if (eName.textContent == strPlayerName) { ePlayer = uc_players[i]; break; }
-    }
+    let ePlayer = UGi_GetPlayerFromName (strPlayerName);
     if (ePlayer == null) { console.log("Error..."); return; }
-    
     UC_SetPlayerCards (ePlayer, cardsData);
+});
+
+socket.on ("g_SetPlayDirection", (bClockwise) => {
+    UC_SetDirection (bClockwise);
 });
 
 function UGi_DrawCard (nCardsToDraw)

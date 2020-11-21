@@ -163,7 +163,6 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
         return;
     }
 
-
     //Update the current card for the other players
     if (cardMeta.bCardThrown === true)
     {
@@ -173,6 +172,7 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
         if (strCardType == "reverse")
         {
             mapValue.game.bClockwise = !mapValue.game.bClockwise;
+            io.in (strRoomCode).emit ("g_SetPlayDirection", mapValue.game.bClockwise);
         }
 
         //The current player either picked up a card or discarded a card... If they picked up a card then the cards array is already up to date (because they need to request the server to draw a card)
@@ -194,7 +194,7 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     }
     
     const nNextPlayerIndex = h_CalculateNextPlayerTurn (mapValue, strCardCol, strCardType);
-    mapValue.game.nTurnIndex = nNextPlayerIndex;
+    mapValue.game.nTurnIndex = nNextPlayerIndex;    //mapValue.game.nTurnIndex is kinda redundant at the moment as we could use nClientIndex to figure out whos turn it currently is...
 
     //Start the next players turn
     io.in (strRoomCode).emit ("g_StartTurn", mapValue.players[nNextPlayerIndex].name);
