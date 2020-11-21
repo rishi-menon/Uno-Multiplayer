@@ -36,7 +36,7 @@ function UC_AddCard(playerCtn, strCard) {
         newCard.src = uc_strImagesDir + "bottom-" + strCard + uc_strImageExtension;
 
         horCtn.appendChild(newCard);
-        UCi_CardAddMetaData(newCard, strCard);
+        UCi_CardAddMetaData(newCard, strCard, true);
         return;
     }
 
@@ -47,7 +47,7 @@ function UC_AddCard(playerCtn, strCard) {
         newCard.src = uc_strImagesDir + "right-" + strCard + uc_strImageExtension;
 
         verCtn.appendChild(newCard);
-        UCi_CardAddMetaData(newCard, strCard);
+        UCi_CardAddMetaData(newCard, strCard, true);
         return;
     }
 
@@ -57,9 +57,9 @@ function UC_AddCard(playerCtn, strCard) {
 }
 
 //Internal function called within this js file... Takes in a card object that was just added by UC_AddCard
-function UCi_CardAddMetaData (eCard, strCard) {
+function UCi_CardAddMetaData (eCard, strCard, bAddClickListenerToSelf) {
     const nIndexDash = strCard.indexOf('-');
-    if (nIndexDash < 0)   { console.log("Invalid str: " + strCard); return; }
+    if (nIndexDash == -1)   { console.log("Invalid str: " + strCard); return; }
     
     const strColor = strCard.slice(0, nIndexDash);
     const strType = strCard.slice(nIndexDash+1, strCard.length);
@@ -69,16 +69,19 @@ function UCi_CardAddMetaData (eCard, strCard) {
     eCard.setAttribute("cardColor", strColor);
     eCard.setAttribute("cardType", strType);
 
-    //Check if player clicked on their own card
-    const ePlayerCtn = eCard.parentNode.parentNode;
-    
-    const bIsSelfCard = (ePlayerCtn === uc_playerSelf);
-    if (bIsSelfCard)
+    if (bAddClickListenerToSelf === true)
     {
-        eCard.addEventListener ("click", () => {
-            UG_CardOnClick(eCard);
-        });
+        //Check if player clicked on their own card
+        const ePlayerCtn = eCard.parentNode.parentNode;    
+        const bIsSelfCard = (ePlayerCtn === uc_playerSelf);
+        if (bIsSelfCard)
+        {
+            eCard.addEventListener ("click", () => {
+                UG_CardOnClick(eCard);
+            });
+        }
     }
+    
 }
 
 
@@ -86,7 +89,6 @@ function UCi_CardAddMetaData (eCard, strCard) {
 //Takes in a card element and removes it
 function UC_RemoveCard (eCard) {
     if (!eCard) { console.log ("Invalid parameter..."); return; }
-    console.log (eCard);
     eCard.parentNode.removeChild(eCard);
 }
 
@@ -152,7 +154,16 @@ function UC_SetPlayerDetails (player, playerDetails)
     {
         UC_AddCard (player, playerDetails.cards[i]);
     }
+}
+function UC_SetPlayerCards (player, cards)
+{
+    if (!player || !cards) { console.log ("Something went wrong"); return; }
+    UCi_RemoveAllCards (player);
 
+    for (let i = 0; i < cards.length; i++)
+    {
+        UC_AddCard (player, cards[i]);
+    }
 }
 
 function UCi_RemoveAllCards (playerCtn)
@@ -171,4 +182,33 @@ function UCi_RemoveAllCards (playerCtn)
     while (cardCtn.lastElementChild) {
         cardCtn.removeChild(cardCtn.lastElementChild);
     }
+}
+
+////////////////////////////////////////////////////////////////////////
+
+//Sets the value of the "thrown" / starting card
+function UC_SetCurrentCard (strCard) {
+    const eCard = document.querySelector (".currentCard");
+    if (!eCard) { console.log ("Error"); return; }
+
+    let strCardSrc = uc_strImagesDir + "bottom-" + strCard + uc_strImageExtension;
+    console.log (strCardSrc);
+    eCard.setAttribute ("src", strCardSrc);
+    UCi_CardAddMetaData (eCard, strCard, false);
+}
+
+
+
+function UC_ParseCard (strCard)
+{
+    const nIndexDash = strCard.indexOf('-');
+    if (nIndexDash == -1)   { console.log("Invalid str: " + strCard); return null; }
+    
+    const strColor = strCard.slice(0, nIndexDash);
+    const strType = strCard.slice(nIndexDash+1, strCard.length);
+
+    if (!strType || !strColor) { console.log("Invalid str: " + strCard); return null; }
+
+    const card = {color: strColor, type: strType};
+    return card;
 }

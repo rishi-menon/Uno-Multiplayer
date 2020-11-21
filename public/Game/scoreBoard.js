@@ -16,10 +16,6 @@ scoreDlg_NextRound.addEventListener ("click", () => {
     socket.emit ("g_StartNextRound");
 });
 
-socket.on ("g_StartNextRoundSuccess", () => {
-    scoreDlg.style.display = "none";
-});
-
 
 ////////////////////////////////////////
 //////////         Error message dlg

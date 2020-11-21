@@ -6,6 +6,9 @@ font-family: 'Montserrat', sans-serif;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+
+    --chooseColBlockSize: 65px;
+    --chooseColBlockDefaultPos: 10%;
 }
 a {
     text-decoration: none;
@@ -93,6 +96,53 @@ section.middle {
     align-items: center;
     justify-content: space-between;
 }
+
+/* 
+////////////////////////////////////////////////////////////////
+////////////        Choose color
+////////////////////////////////////////////////////////////////
+*/
+
+.wildChooseColor {
+    position: relative;
+    height: 14rem;
+    width: 14rem;
+}
+
+.wildChooseColor .block {
+    position: absolute;
+    width: var(--chooseColBlockSize, 65px);
+    height: var(--chooseColBlockSize, 65px);
+    border-radius: 5px;
+    transform: rotate(45deg);
+}
+.wildChooseColor .red {
+    background: #EF5555;
+    left: calc(50% - var(--chooseColBlockSize, 65px) / 2);
+    top: var(--chooseColBlockDefaultPos);
+}
+.wildChooseColor .yellow {
+    background: #FFF50F;
+    top: calc(50% - var(--chooseColBlockSize, 65px) / 2);
+    right: var(--chooseColBlockDefaultPos);
+}
+.wildChooseColor .green {
+    background: #00CC5E;
+    left: calc(50% - var(--chooseColBlockSize, 65px) / 2);
+    bottom: var(--chooseColBlockDefaultPos);
+
+}
+.wildChooseColor .blue {
+    background: #0066FF;
+    top: calc(50% - var(--chooseColBlockSize, 65px) / 2);
+    left: var(--chooseColBlockDefaultPos);
+}
+
+/* 
+////////////////////////////////////////////////////////////////
+////////////        
+////////////////////////////////////////////////////////////////
+*/
 
 .direction.clockwise {
     transform: scaleX(1);

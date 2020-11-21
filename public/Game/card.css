@@ -3,6 +3,11 @@
 ////////////////////            Horizontal
 ////////////////////////////////////////////////////////////////////////////////
 */
+
+.cardCtnVer, .cardCtnHor {
+    --CardHoverTransitionSpeed: 0.3s;
+}
+
 .playerCtnHor {
     display: flex;
     align-items: center;
@@ -27,7 +32,7 @@
 .cardCtnHor img {
     margin: 0 var(--negCardMarginHor);
     max-height: var(--hor-max-height);
-    transition: margin 0.4s;
+    transition: margin var(--CardHoverTransitionSpeed);
 }
 
 .playerCtnHor.up .cardCtnHor img{
@@ -89,7 +94,7 @@
     margin: var(--negCardMarginVer) 0;
     max-width: var(--ver-max-width);
 
-    transition: margin 0.4s;
+    transition: margin var(--CardHoverTransitionSpeed);
 
     /* transform: rotate(180deg); */
 }

@@ -1,16 +1,10 @@
-<svg width="178" height="273" viewBox="0 0 178 273" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="0.19043" y="0.59082" width="177" height="272" fill="#EF4343"/>
-<path d="M159.41 37.5355C166.882 42.7676 172.806 49.612 177.189 57.6631V146.952C172.154 160.396 165.098 173.901 156.037 186.843C116.68 243.05 54.3809 267.332 16.8876 241.079C10.0261 236.275 4.47089 230.111 0.214858 222.901L0.189941 128.855C5.136 116.342 11.8302 103.813 20.2612 91.7718C59.6178 35.5648 121.917 11.2824 159.41 37.5355Z" fill="white"/>
-<rect x="120.198" y="100.852" width="7" height="91" transform="rotate(45 120.198 100.852)" fill="#EF4343" stroke="black" stroke-width="2"/>
-<circle cx="90.5" cy="135.5" r="49.5" stroke="#EF4343" stroke-width="10"/>
-<circle cx="90.5" cy="135.5" r="53.5" stroke="black" stroke-width="2"/>
-<circle cx="90" cy="135" r="44" stroke="black" stroke-width="2"/>
-<rect x="164.44" y="241.854" width="3.78487" height="26.2841" transform="rotate(45 164.44 241.854)" fill="white" stroke="black" stroke-width="0.7"/>
-<circle cx="156.5" cy="252.5" r="15" stroke="white" stroke-width="3"/>
-<circle cx="156.5" cy="252.5" r="16.15" stroke="black" stroke-width="0.7"/>
-<circle cx="156.5" cy="252.5" r="13.15" stroke="black" stroke-width="0.7"/>
-<rect x="28.4399" y="10.8543" width="3.78487" height="26.2841" transform="rotate(45 28.4399 10.8543)" fill="white" stroke="black" stroke-width="0.7"/>
-<circle cx="20.5" cy="21.5" r="15" stroke="white" stroke-width="3"/>
-<circle cx="20.5" cy="21.5" r="16.15" stroke="black" stroke-width="0.7"/>
-<circle cx="20.5" cy="21.5" r="13.15" stroke="black" stroke-width="0.7"/>
+<svg width="177" height="272" viewBox="0 0 177 272" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.000488281" width="177" height="272" fill="#EF4343"/>
+<path d="M159.22 36.9447C166.693 42.1768 172.616 49.0211 176.999 57.0723V146.361C171.964 159.805 164.908 173.311 155.847 186.252C116.49 242.459 54.191 266.741 16.6977 240.488C9.83616 235.684 4.28095 229.52 0.024917 222.31L0 128.264C4.94606 115.751 11.6403 103.222 20.0713 91.181C59.4279 34.974 121.727 10.6916 159.22 36.9447Z" fill="white"/>
+<rect x="118.013" y="96.8521" width="14.6503" height="93" transform="rotate(45 118.013 96.8521)" fill="#EF4343"/>
+<circle cx="90.3101" cy="134.909" r="47.5" stroke="#EF4343" stroke-width="14"/>
+<rect x="164.25" y="240.769" width="4.48487" height="26.9841" transform="rotate(45 164.25 240.769)" fill="white"/>
+<circle cx="156.31" cy="251.909" r="14.5" stroke="white" stroke-width="4"/>
+<rect x="28.25" y="9.76855" width="4.48487" height="26.9841" transform="rotate(45 28.25 9.76855)" fill="white"/>
+<circle cx="20.3101" cy="20.9092" r="14.5" stroke="white" stroke-width="4"/>
 </svg>

@@ -8,11 +8,19 @@ let ug_bInitJoinRoomAlreadyFailed = false;
 // Once you disconnect you shouldnt reconnect again
 let ug_bPlayerDisconnected = false;
 
-// let ug_currentCard;
-// let ug_bSelfTurn = false;
+let ug_strCurrentCardColor;
+let ug_strCurrentCardType;
+//If you change the name then you would have to change it in server file as well
+const ug_strCurrentCardMeta = {bCardThrown: false};
+
+let ug_bSelfTurn = false;
 
 const nRoundsToWin = 4;
 const nMaxPlayers = 8;
+
+function UGi_ResetCurrMeta () {
+    ug_strCurrentCardMeta.bCardThrown = false;
+}
 
 socket.on("connect", () => {
     if (!ug_bPlayerDisconnected)
@@ -25,7 +33,7 @@ socket.on("connect", () => {
 
         //Test... Keep the socket open ?
         setInterval (() => {
-            socket.emit ("random_doesNotExist");
+            socket.emit ("_NonExistantMessage_");
         }, 500);
     }
 });
@@ -64,6 +72,88 @@ function UGi_InitJoinRoomFailed (strMessage) {
 ///////////////////////////////////////////////////////
 ///////////              Update players in the room
 
+function UGi_GenerateLocalClientIndex (nCount)
+{
+    let clientIndex = [];
+    //[0, 3, 1, 5, 2, 4, 6, 7]
+    switch (nCount)
+    {
+        case 1:
+        {
+            clientIndex.push(0);
+            break;
+        }
+        case 2:
+        {
+            clientIndex.push(0);
+            clientIndex.push(3);
+            break;
+        }
+        case 3:
+        {
+            clientIndex.push(0);
+            clientIndex.push(1);
+            clientIndex.push(3);
+            break;
+        }
+        case 4:
+        {
+            clientIndex.push(0);
+            clientIndex.push(1);
+            clientIndex.push(3);
+            clientIndex.push(5);
+            break;
+        }
+        case 5:
+        {
+            clientIndex.push(0);
+            clientIndex.push(1);
+            clientIndex.push(2);
+            clientIndex.push(3);
+            clientIndex.push(5);
+            break;
+        }
+        case 6:
+        {
+            clientIndex.push(0);
+            clientIndex.push(1);
+            clientIndex.push(2);
+            clientIndex.push(3);
+            clientIndex.push(5);
+            clientIndex.push(6);
+            break;
+        }
+        case 7:
+        {
+            clientIndex.push(0);
+            clientIndex.push(1);
+            clientIndex.push(2);
+            clientIndex.push(3);
+            clientIndex.push(4);
+            clientIndex.push(5);
+            clientIndex.push(6);
+            break;
+        }
+        case 8:
+        {
+            clientIndex.push(0);
+            clientIndex.push(1);
+            clientIndex.push(2);
+            clientIndex.push(3);
+            clientIndex.push(4);
+            clientIndex.push(5);
+            clientIndex.push(6);
+            clientIndex.push(7);
+            break;
+        }
+        default:
+        {
+            console.log ("Error... " + data.count);
+            break;
+        }
+    }
+    return clientIndex;
+}
 socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
     uc_players.forEach(element => {
         element.style.display = "none";
@@ -77,8 +167,8 @@ socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
     
     let strPlayerOrderRearrange = strEnd + strStart;
     
-    let clientIndex = [0, 3, 1, 5, 2, 4, 6, 7];
-    
+    let clientIndex = UGi_GenerateLocalClientIndex(data.count);
+
     for (let i = 0; i < data.count; i++)
     {
         let nServerIndex = Number(strPlayerOrderRearrange[i]);
@@ -116,6 +206,99 @@ socket.on ("g_UpdateScoreBoard_HideBtn", () => {
     scoreBoardNextRoundBtn.style.display = "none";
 });
 
+socket.on ("g_StartNextRoundSuccess", (strStartingCard) => {
+    const scoreDlg = document.querySelector (".scoreDlg");
+    if (scoreDlg)
+    {
+        //Hide the score dialog
+        scoreDlg.style.display = "none";
+    }
+
+    UG_UpdateCurrentCard (strStartingCard, null);
+});
+
+socket.on ("g_StartTurn", (strPlayerTurn) => {
+    console.log ("Turnn! : " + strPlayerTurn);
+    let ePlayerTurn = null;
+    for (let i = 0; i < nMaxPlayers; i++)
+    {
+        const eName = uc_players[i].querySelector("p");
+        if (!eName) { continue; }
+
+        if (eName.textContent == strPlayerTurn) { ePlayerTurn = uc_players[i]; break; }
+    }
+
+    //Reset color
+    //To do: combine this bottom for loop with the one on top
+    for (let i = 0; i < nMaxPlayers; i++)
+    {
+        const eName = uc_players[i].querySelector("p");
+        if (!eName) { continue; }
+
+        eName.style.color = "#efefef";
+    }
+    ePlayerTurn.querySelector ("p").style.color = "#ff0000";
+
+    //To do: Add better visuals for the current players turn
+    if (ePlayerTurn === uc_playerSelf)
+    {
+        console.log ("Its your turn");
+        //Its your turn
+        ug_bSelfTurn = true;
+        const eCurrentCard = document.querySelector (".currentCard");
+        // UC_HighlightCard (eCurrentCard, true);
+    }
+    else
+    {
+        //Its not your turn
+        ug_bSelfTurn = false;
+        const eCurrentCard = document.querySelector (".currentCard");
+        // UC_HighlightCard (eCurrentCard, false); 
+    }
+});
+
+socket.on ("g_UpdateSelfCardsCount", (data) => {
+    uc_playerSelf.style.display = "flex";   //Probably not even required but safer to keep it
+    UC_SetPlayerDetails (uc_playerSelf, data);
+});
+
+socket.on ("g_UpdateThrownCard", (strCurrentCard, cardMeta) => {
+    console.log ("Updateeee");
+    //To do: If a wild card was thrown then show which color the other player selected inside the following function
+    UG_UpdateCurrentCard (strCurrentCard, cardMeta);
+});
+
+socket.on ("g_UpdateOtherPlayerCards", (strPlayerName, cardsData) => {
+    console.log ("UpdateOtherPlayer");
+    let ePlayer = null;
+    for (let i = 0; i < nMaxPlayers; i++)
+    {
+        const eName = uc_players[i].querySelector("p");
+        if (!eName) { continue; }
+
+        if (eName.textContent == strPlayerName) { ePlayer = uc_players[i]; break; }
+    }
+    if (ePlayer == null) { console.log("Error..."); return; }
+    
+    UC_SetPlayerCards (ePlayer, cardsData);
+});
+
+function UGi_DrawCard (nCardsToDraw)
+{
+    if (!nCardsToDraw || nCardsToDraw <= 0) { return; }
+    socket.emit ("g_DrawCardsSelf", nCardsToDraw);
+}
+
+//Draw a card
+document.querySelector (".deckCard").addEventListener ("click", () => {
+    if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot draw card"); return; }
+    if (ug_bSelfTurn !== true) { return; }
+
+    UGi_DrawCard (1);
+
+    //To do: Add a feature where player can draw a card and has the option to throw it... In that case, server should emit g_UpdateSelfCardsCount (call a function with the right parameters) so that players card will update... Also dont call end turn immediateley... You also might have to add a end turn button so that the player isnt forced to throw a card if they dont want to 
+    UGi_EndTurn();
+});
 
 //////////
 // data:
@@ -155,7 +338,7 @@ function UGi_SetScoreBoardDetails (data, strRoomCode) {
         element.style.display = "none";
     }
 }
-//////////
+//////////////////////////////////////////////////
 
 //If strMessage is "" then the dialog is hidden
 function UGi_DisplayError (strMessage)
@@ -176,12 +359,78 @@ function UGi_DisplayError (strMessage)
     eMessage.textContent = strMessage;
 }
 
+//////////////////////////////////////////////////
+
+function UG_UpdateCurrentCard (strCurrCard, cardMeta) {
+    UC_SetCurrentCard (strCurrCard);
+    let cardObj = UC_ParseCard (strCurrCard);
+    if (cardObj)
+    {
+        ug_strCurrentCardColor = cardObj.color;
+        ug_strCurrentCardType = cardObj.type;
+    }
+    else
+    {
+        console.log ("Error...");
+    }
+}
+
+
 //public
 //function gets called when the player clicks on their OWN card
 function UG_CardOnClick(eCard) {
     if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot click on card"); return; }
-    console.log(eCard)
-    // console.log ("Clicked on card");
+    if (ug_bSelfTurn !== true) { return; }
 
-    // UC_RemoveCard (eCard);
+    const strColor = eCard.getAttribute ("cardColor");
+    const strType = eCard.getAttribute ("cardType");
+    if (!strColor || !strType) { console.log ("Error..."); return; }
+
+    let bCanThrowCard = UGi_ThrowCardIsValid(strColor, strType, ug_strCurrentCardColor, ug_strCurrentCardType);
+
+    console.log (bCanThrowCard.toString());
+    
+    if (bCanThrowCard)
+    {
+        //To do: Add animations to show the card moving ?
+        ug_strCurrentCardColor = strColor;
+        ug_strCurrentCardType = strType;
+        
+        UGi_ResetCurrMeta ();
+        ug_strCurrentCardMeta.bCardThrown = true;
+
+        UC_SetCurrentCard (strColor + "-" + strType);
+        UC_RemoveCard (eCard);
+        UGi_EndTurn ();
+    }
+
+}
+
+function UGi_ThrowCardIsValid (strCardCol, strCardType, strCurrentCol, strCurrentType)
+{
+    let bCanThrowCard = false;
+    //Same col or same number
+    if (strCardCol ===  strCurrentCol ||
+        strCardType ===  strCurrentType  ||
+        strCardCol === "black") { bCanThrowCard = true; }
+
+    return bCanThrowCard;
+}
+
+///////////
+
+
+function UGi_EndTurn ()
+{
+    if (ug_bSelfTurn !== true) { console.log ("Error..."); return; }
+
+    ug_bSelfTurn = false;
+
+    //Visual Stuff
+    uc_playerSelf.querySelector ("p").style.color = "#efefef";
+
+    //To do: Send signal here to end turn
+    const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;
+    
+    socket.emit ("g_PlayerEndTurn", strCard, ug_strCurrentCardMeta);
 }

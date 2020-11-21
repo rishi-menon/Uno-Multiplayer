@@ -1,16 +1,10 @@
 <svg width="273" height="178" viewBox="0 0 273 178" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="0.689453" y="177.09" width="177" height="272" transform="rotate(-90 0.689453 177.09)" fill="#004FC5"/>
-<path d="M37.6346 17.8705C42.8667 10.3983 49.7111 4.47525 57.7622 0.0922089H147.051C160.495 5.12707 174 12.1824 186.942 21.2441C243.149 60.6007 267.431 122.9 241.178 160.393C236.374 167.255 230.21 172.81 223 177.066L128.954 177.091C116.441 172.145 103.912 165.451 91.8709 157.02C35.6639 117.663 11.3815 55.3638 37.6346 17.8705Z" fill="white"/>
-<rect x="100.951" y="57.0825" width="7" height="91" transform="rotate(-45 100.951 57.0825)" fill="#004FC5" stroke="black" stroke-width="2"/>
-<circle cx="135.599" cy="86.7808" r="49.5" transform="rotate(-90 135.599 86.7808)" stroke="#004FC5" stroke-width="10"/>
-<circle cx="135.599" cy="86.7808" r="53.5" transform="rotate(-90 135.599 86.7808)" stroke="black" stroke-width="2"/>
-<circle cx="135.099" cy="87.2808" r="44" transform="rotate(-90 135.099 87.2808)" stroke="black" stroke-width="2"/>
-<rect x="241.953" y="12.8408" width="3.78487" height="26.2841" transform="rotate(-45 241.953 12.8408)" fill="white" stroke="black" stroke-width="0.7"/>
-<circle cx="252.599" cy="20.7808" r="15" transform="rotate(-90 252.599 20.7808)" stroke="white" stroke-width="3"/>
-<circle cx="252.599" cy="20.7808" r="16.15" transform="rotate(-90 252.599 20.7808)" stroke="black" stroke-width="0.7"/>
-<circle cx="252.599" cy="20.7808" r="13.15" transform="rotate(-90 252.599 20.7808)" stroke="black" stroke-width="0.7"/>
-<rect x="10.953" y="148.841" width="3.78487" height="26.2841" transform="rotate(-45 10.953 148.841)" fill="white" stroke="black" stroke-width="0.7"/>
-<circle cx="21.5986" cy="156.781" r="15" transform="rotate(-90 21.5986 156.781)" stroke="white" stroke-width="3"/>
-<circle cx="21.5986" cy="156.781" r="16.15" transform="rotate(-90 21.5986 156.781)" stroke="black" stroke-width="0.7"/>
-<circle cx="21.5986" cy="156.781" r="13.15" transform="rotate(-90 21.5986 156.781)" stroke="black" stroke-width="0.7"/>
+<rect x="0.5" y="177.5" width="177" height="272" transform="rotate(-90 0.5 177.5)" fill="#004FC5"/>
+<path d="M37.4452 18.2796C42.6773 10.8075 49.5216 4.88443 57.5728 0.501389H146.861C160.305 5.53625 173.811 12.5916 186.752 21.6533C242.959 61.0098 267.242 123.309 240.989 160.802C236.184 167.664 230.02 173.219 222.811 177.475L128.765 177.5C116.251 172.554 103.722 165.86 91.6815 157.429C35.4745 118.072 11.1921 55.773 37.4452 18.2796Z" fill="white"/>
+<rect x="97.3516" y="59.4868" width="14.6503" height="93" transform="rotate(-45 97.3516 59.4868)" fill="#004FC5"/>
+<circle cx="135.409" cy="87.1899" r="47.5" transform="rotate(-90 135.409 87.1899)" stroke="#004FC5" stroke-width="14"/>
+<rect x="241.269" y="13.25" width="4.48487" height="26.9841" transform="rotate(-45 241.269 13.25)" fill="white"/>
+<circle cx="252.409" cy="21.1899" r="14.5" transform="rotate(-90 252.409 21.1899)" stroke="white" stroke-width="4"/>
+<rect x="10.2686" y="149.25" width="4.48487" height="26.9841" transform="rotate(-45 10.2686 149.25)" fill="white"/>
+<circle cx="21.4092" cy="157.19" r="14.5" transform="rotate(-90 21.4092 157.19)" stroke="white" stroke-width="4"/>
 </svg>

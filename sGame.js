@@ -6,6 +6,7 @@ let io;
 
 const fs = require ('fs');
 const { type } = require('os');
+const { createDeflate } = require('zlib');
 
 // 0:None
 // 1:Critical
@@ -50,7 +51,6 @@ const nInitialCards = 7;
 
 const cardGenerator = require ("./sCardGenerator.js");
 
-
 //Public API
 module.exports.Init = function(_io) {
     io = _io;
@@ -75,6 +75,159 @@ module.exports.OnNewConnection = function (socket) {
     socket.on ("g_StartNextRound", () => {
         StartNextRound (socket);
     });
+
+    socket.on ("g_DrawCardsSelf" , (nCardsCount) => {
+        AddCardsToPlayer (socket.id, nCardsCount, true);
+    });
+
+    socket.on ("g_PlayerEndTurn", (strCurrentCard, cardMeta) => {
+        PlayerEndedTurn (socket, strCurrentCard, cardMeta);
+    });
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////
+////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
+{   
+    const {roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex} = GetGenericValuesFromSocket (socket.id, "PlayerEndedTurn");
+    if (nServerIndex == -1) { return; }
+
+    //validate the cardMeta
+    if (!cardMeta.hasOwnProperty ("bCardThrown")) { Log (LogCritical, "Invalid meta data received from client"); return; }
+
+    //validate strCurrentCard
+    const nIndex = strCurrentCard.indexOf ("-");
+    if (nIndex == -1) { Log(LogWarn, "PlayerEndedTurn: Invalide strCurrentCard: " + strCurrentCard); return; }
+
+    const strCardCol  = strCurrentCard.slice (0, nIndex);
+    const strCardType = strCurrentCard.slice (nIndex+1, strCurrentCard.length);
+    
+    if (!strCardCol || !strCardType) { Log(LogWarn, "PlayerEndedTurn: Invalid strCurrentCard2: " + strCurrentCard); return; }
+
+    if (mapValue.count != mapValue.game.strPlayerOrder.length) {Log(LogWarn, "PlayerEndedTurn: Invalid player count or strPlayerOrder: " + mapValue.count + ".." + mapValue.game.strPlayerOrder); return;}
+
+    //Safety checks over... ?
+
+    //To do: temp.. delete 
+    if (strCardCol != strCardCol.toLowerCase() || strCardType != strCardType.toLowerCase())
+    {
+        console.log ("This is very very bad!!..... It should be lower case: " + strCardCol + "-" + strCardType);
+        return;
+    }
+
+
+
+    //Update the current card for the other players
+    if (cardMeta.bCardThrown === true)
+    {
+        socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
+    }
+    
+    //reverse the direction before calculating who the next player is (Reverse only if that card was thrown)
+    if (cardMeta.bCardThrown === true && strCardType == "reverse")
+        mapValue.game.bClockwise = !mapValue.game.bClockwise;
+
+    //calculate index of current player in the order
+    const nIndexOrder = mapValue.game.strPlayerOrder.indexOf (mapValue.game.nTurnIndex);
+    if (nIndexOrder == -1) { Log (LogError, "PlayerEndedTurn: Couldnt find nIndexOrder"); return; }
+    
+
+    console.log ("CurrentOrder: " + mapValue.game.strPlayerOrder);
+    console.log ("CurrentPlayer: " + nIndexOrder);
+
+    //Calculate who the next player is
+    let newPlayerIndex = nIndexOrder;
+    newPlayerIndex += (mapValue.game.bClockwise) ? 1 : -1;
+    console.log ("newPlayerIndex1: " + newPlayerIndex);
+    if (strCardType == "skip")
+    {
+        newPlayerIndex += (mapValue.game.bClockwise) ? 1 : -1;
+        console.log ("newPlayerIndex2: " + newPlayerIndex);
+    }
+    while (newPlayerIndex < 0) {
+        newPlayerIndex += mapValue.count;
+    }
+    //Could use a modulo operation here instead but this should also work
+    while (newPlayerIndex >= mapValue.count) {
+        newPlayerIndex -= mapValue.count;
+    }
+    console.log ("newPlayerIndex3: " + newPlayerIndex);
+
+    const newPlayerServerIndex = Number(mapValue.game.strPlayerOrder[newPlayerIndex]);
+    mapValue.game.nTurnIndex = newPlayerServerIndex;
+
+    //The current player either picked up a card or discarded a card... If they picked up a card then the cards array is already up to date (because they need to request server to draw a card)
+    //If they threw a card then we need to update the cards array
+    if (cardMeta.bCardThrown === true)
+    {
+        const cardsArray = mapValue.players[nServerIndex].cards;
+        for (let i = 0; i < cardsArray.length; i++)
+        {
+            if (cardsArray[i] == strCurrentCard)
+            {
+                // console.log ("Removed card " + strCurrentCard + " from the player");
+                cardsArray.splice (i, 1);
+                break;
+            }
+        }
+    }
+
+    //Update all the other players now that the current player has picked a card/thrown a card
+    {
+        const playerData = mapValue.players[nServerIndex];
+        const cardsArray = playerData.cards;
+        let cardsData = [];
+        for (let i = 0; i < cardsArray.length; i++)
+        {
+            cardsData.push("black-back");
+        }
+        // console.log ("Updating other players");
+        socket.to (strRoomCode).emit ("g_UpdateOtherPlayerCards", playerData.name, cardsData);
+    }
+
+    //Start the next players turn
+    // console.log ("Turn: " + mapValue.players[newPlayerServerIndex].name);
+    io.in (strRoomCode).emit ("g_StartTurn", mapValue.players[newPlayerServerIndex].name);
+} 
+
+
+///////////////////////////////////////////////////////////////////////////
+////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+function AddCardsToPlayer(socketId, nCardsCount, bUpdatePlayer)
+{
+    const {roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex} = GetGenericValuesFromSocket (socketId, "AddCardsToPlayer");
+    if (nServerIndex == -1) { return; }
+
+    let newCards = cardGenerator.GetCards (nCardsCount);
+    const player = mapValue.players[nServerIndex];
+    for (let i = 0; i < nCardsCount; i++)
+    {
+        player.cards.push (newCards[i]);
+    }
+
+    if (bUpdatePlayer)
+    {
+        data = new Object();
+        data.name = player.name;
+        data.winCount = player.winCount;
+        data.cards = player.cards;
+        io.to(socketId).emit ("g_UpdateSelfCardsCount", data);
+    }
 }
 
 function StartNextRound (socket) {
@@ -85,44 +238,55 @@ function StartNextRound (socket) {
     const mapValue = mapRoomCodeToPlayers.get (strRoomCode);
     if (!mapValue) { Log (LogWarn, "room does not exist in player map while starting next round"); return; }
     
-    if (mapValue.bRoundStarted === true) { Log (LogWarn, "Cannot start round... Round is already started"); return; }
+    if (mapValue.game.bRoundStarted === true) { Log (LogWarn, "Cannot start round... Round is already started"); return; }
 
-    mapValue.bRoundStarted = true;
+    //Generate starting card
+    let strStartingCard;
+    {
+        let bIsValid = false;
+        for (let nAttempts = 0; nAttempts < 25 && !bIsValid; nAttempts++)
+        {
+            strStartingCard = cardGenerator.GetCard();
+            const nIndex = strStartingCard.indexOf ("-");
+            if (nIndex == -1) { continue; }
 
-    UpdatePlayerNum (strRoomCode, nInitialCards, true);
-    io.in(strRoomCode).emit("g_StartNextRoundSuccess");
+            const strColor = strStartingCard.slice(0, nIndex);
+            const strType = strStartingCard.slice(nIndex+1, strStartingCard.length);
+
+            if (strColor == "black") { continue; }
+            if (strType == "draw2" || strType == "reverse" || strType == "skip") { continue; }
+
+            bIsValid = true;
+        }
+        if (!bIsValid) { Log (LogWarn, "Cannot start round... Could not calculate starting card"); return; }
+    }
+    mapValue.game.bRoundStarted = true;
+    UpdatePlayerNum (strRoomCode, nInitialCards, true); //Updates the strPlayerOrder and generates cards
+
+    io.in(strRoomCode).emit("g_StartNextRoundSuccess", strStartingCard);
+    
+    mapValue.game.nTurnIndex = Number(mapValue.game.strPlayerOrder[0]);   //The person who starts the game
+    Log (LogTrace, "Player will start: " + mapValue.game.nTurnIndex);
+    const turnPlayer = mapValue.players[mapValue.game.nTurnIndex];
+
+    io.in (strRoomCode).emit ("g_StartTurn", turnPlayer.name);
 }
 
 function LeaveRoom (socket) {
     Log (LogTrace, "Leaving:" + socket.id);
 
-    let strRoomCode = mapSocketIdToRoomCode.get (socket.id);
-    if (!strRoomCode) { Log (LogWarn, "socket leave room: does not exist in the socketId map"); return; }
-
-    let mapPlayers = mapRoomCodeToPlayers.get (strRoomCode);
-    if (!mapPlayers) { Log (LogWarn, "socket leave room: does not exist in the player map"); return; }
-
-    console.log ("Leaving1:" + socket.id);
-
-    let nClientIndex = -1;
-    for (let i = 0; i < mapPlayers.count; i++)
-    {
-        if (mapPlayers.players[i].socketId == socket.id)
-        {
-            nClientIndex = i;
-        }
-    }
-    if (nClientIndex == -1) { Log (LogWarn, "socket leave room: Could not find client index"); return; }
+    const {roomCode: strRoomCode, mapValue: mapPlayers, index: nServerIndex} = GetGenericValuesFromSocket (socket.id, "LeaveRoom");
+    if (nServerIndex == -1) { return; }
 
     //Remove socket from the socket map
     mapSocketIdToRoomCode.delete (socket.id);
 
     //Remove socket from the players map
     mapPlayers.count -= 1;
-    mapPlayers.players.splice (nClientIndex, 1);
+    mapPlayers.players.splice (nServerIndex, 1);
     socket.leave (strRoomCode);
 
-    if (mapPlayers.hostIndex == nClientIndex)
+    if (mapPlayers.hostIndex == nServerIndex)
     {
         //The host left... Calculate/set a new host
         mapPlayers.hostIndex = 0; //It could be random but just set it to 0 for simplicity
@@ -130,15 +294,12 @@ function LeaveRoom (socket) {
 
     if (mapPlayers.count == 0)
     {
-        console.log ("Leaving2a:" + socket.id);
         //All players left.. Delete from map
         mapRoomCodeToPlayers.delete (strRoomCode);
     }
     else
     {
-        console.log ("Leaving2b:" + socket.id);
-        
-        mapPlayers.strPlayerOrder =  RemovePlayerFromOrder (mapPlayers.strPlayerOrder, nClientIndex);
+        mapPlayers.game.strPlayerOrder =  RemovePlayerFromOrder (mapPlayers.game.strPlayerOrder, nServerIndex);
         UpdatePlayerNum (strRoomCode, -1, false);  //Player couldve left while the game is ongoing... Preserve cards and preserve order
         UpdateScoreBoard (strRoomCode);     //Player couldve left while the scoreboard is displayed
     }
@@ -149,20 +310,34 @@ function InitJoinRoom (socket, strCode) {
 
     //To do: Calculate this value from strCode
     let strRoomCode = "ABCD";
-    let strPlayerName = "Rishi";
+    let strPlayerName = "";
     let bIsHost = true;
 
     const nPlayerWins = 0;
 
     //To do: temp code
-    const strLettersTemp = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    strPlayerName="";
-    for (let i = 0; i < 5; i++)
-    {
-        strPlayerName += strLettersTemp[Math.floor(Math.random() * 26)];
-    }
+    // const strLettersTemp = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // strPlayerName="";
+    // for (let i = 0; i < 5; i++)
+    // {
+    //     strPlayerName += strLettersTemp[Math.floor(Math.random() * 26)];
+    // }
+
 
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+
+
+    //To do: temp code
+    if (!mapValue)
+    {
+        strPlayerName = "Rishi0"
+    }
+    else
+    {
+        strPlayerName = "Rishi" + mapValue.count;
+    }
+
+
 
     if (!mapValue) {
         //Create the object and insert it into the map
@@ -170,8 +345,13 @@ function InitJoinRoom (socket, strCode) {
         mapValue.players = [];
         mapValue.count = 0;
         
-        mapValue.bRoundStarted = false; //This gets set to true when the actual game starts...
-        mapValue.strPlayerOrder = "";
+        //Game properties
+        mapValue.game = new Object ();
+
+        mapValue.game.bRoundStarted = false; //This gets set to true when the actual game starts...
+        mapValue.game.strPlayerOrder = "";
+        mapValue.game.nTurnIndex = 0;
+        mapValue.game.bClockwise = true;
 
         //This exists when the host joins the room
         // mapValue.hostIndex = false;  
@@ -180,7 +360,7 @@ function InitJoinRoom (socket, strCode) {
     else
     {
         //The room already exists
-        if (mapValue.bRoundStarted)
+        if (mapValue.game.bRoundStarted)
         {
             //The player cannot join while the round is ongoing... The player should not have reached to game.html while the round is ongoing... Logical error
             Log (LogCritical, "Fatal Error: A player joined a room while it was ongoing... Logical error");
@@ -233,7 +413,7 @@ function UpdateScoreBoard(strRoomCode)
         io.in(strRoomCode).emit("g_UpdateScoreBoard", data, strRoomCode);
         io.in(strRoomCode).emit("g_UpdateScoreBoard_HideBtn");  //Hide the Next Round Btn
         
-        if (data.count > 1 && mapValue.hasOwnProperty("hostIndex"))
+        if (data.count > 0 && mapValue.hasOwnProperty("hostIndex"))
         {
             //Only host can start the next round
             let playerSocketId = mapValue.players[mapValue.hostIndex].socketId;
@@ -254,16 +434,14 @@ function UpdatePlayerNum (strRoomCode, nGenerateCards, bRandomizeOrder) {
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
     if (!mapValue) { Log(LogWarn, "Room code does not exist in the map in UpdatePlayerNum: " + strRoomCode); return; }
 
-    let strPlayerOrder;
     if (bRandomizeOrder === true)
     {
-        strPlayerOrder = GeneratePlayerOrder(mapValue.count);
+        mapValue.game.strPlayerOrder = GeneratePlayerOrder(mapValue.count);
     }
     else if (bRandomizeOrder === false)
     {
         //Dont randomize order
-        strPlayerOrder = mapValue.strPlayerOrder;
-        // strPlayerOrder = GeneratePlayerOrderNonRandom (mapValue.count, mapValue.strPlayerOrder);
+        // strPlayerOrder = GeneratePlayerOrderNonRandom (mapValue.count, mapValue.game.strPlayerOrder);
     }
     else { Log(LogWarn, "UpdatePlayerNum: second parameter should be a boolean: " + bRandomizeOrder + "..." + typeof(bRandomizeOrder)); return; }
     
@@ -278,9 +456,6 @@ function UpdatePlayerNum (strRoomCode, nGenerateCards, bRandomizeOrder) {
         }
     }
 
-
-    mapValue.strPlayerOrder = strPlayerOrder;
-
     for (let i = 0; i < mapValue.count; i++)
     {
         let curPlayer = mapValue.players[i];
@@ -288,7 +463,7 @@ function UpdatePlayerNum (strRoomCode, nGenerateCards, bRandomizeOrder) {
 
         let strSocketId = curPlayer.socketId;
         let generatedData = GenerateUpdatePlayerData(mapValue, i);
-        io.to(strSocketId).emit ("g_UpdatePlayerNum", strPlayerOrder, i, generatedData);
+        io.to(strSocketId).emit ("g_UpdatePlayerNum", mapValue.game.strPlayerOrder, i, generatedData);
     }
 }
 
@@ -412,3 +587,38 @@ function GenerateScoreBoardData (mapValue) {
     
     return returnVal;
 }
+
+
+
+
+
+
+
+function GetGenericValuesFromSocket (socketId, strFunctionName)
+{
+    const strRoomCode = mapSocketIdToRoomCode.get (socketId);
+    if (!strRoomCode) { 
+        Log (LogWarn, "Socketid dne func:" + strFunctionName);
+        return { roomCode: undefined, mapValue: undefined, index: -1 }; 
+    }
+
+    const mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+    if (!mapValue) { 
+        Log (LogWarn, "MapValue dne func:" + strFunctionName); 
+        return { roomCode: strRoomCode, mapValue: undefined, index: -1 }; 
+    }
+    
+    let nServerIndex = -1;
+    for (let i = 0; i < mapValue.count; i++)
+    {
+        if (socketId === mapValue.players[i].socketId)
+        {
+            nServerIndex = i;
+            break;
+        }
+    }
+    if (nServerIndex == -1) { 
+        Log (LogWarn, "ServerId dne func: " + strFunctionName); 
+    }
+    return { roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex };  
+} 
