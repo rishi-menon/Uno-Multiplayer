@@ -17,6 +17,7 @@ let ug_strCurrentCardType;
 const ug_currCardMeta = {bCardThrown: false, nForceDraw: 0, nForceDrawValue: 0, strAdditionalCol: ""};
 
 let ug_bSelfTurn = false;
+let ug_strPlayerHasWon = "";
 
 const nRoundsToWin = 4;
 const nMaxPlayers = 8;
@@ -67,6 +68,11 @@ function UGi_InitJoinRoomFailed (strMessage) {
 
     }
 }
+
+socket.on ("g_DisplayErrorMessage", (strError) => {
+    ug_bSelfTurn = false;   //Not required but just in case
+    UGi_DisplayError (strError);
+})
 
 ///////////////////////////////////////////////////////
 ///////////              Update players in the room
@@ -125,12 +131,24 @@ socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
 socket.on ("g_UpdateScoreBoard", (data, strRoomCode) => {
     UGi_SetScoreBoardDetails (data, strRoomCode);
 });
+socket.on ("g_SetScoreBoardVisibility", (bShow) => {
+    UGi_SetScoreBoardVisibility (bShow);
+});
 
-socket.on ("g_UpdateScoreBoard_ShowBtn", () => {
+socket.on ("g_UpdateScoreBoard_ShowBtn", (strPlayerWonName) => {
     const scoreBoardNextRoundBtn = document.querySelector (".score_nextBtn");
     if (!scoreBoardNextRoundBtn) { console.log ("Error..."); return; }
     
     scoreBoardNextRoundBtn.style.display = "flex"; 
+    ug_strPlayerHasWon = strPlayerWonName;
+    if (strPlayerWonName == "")
+    {
+        scoreBoardNextRoundBtn.querySelector("p").textContent = "Next Round"; 
+    }
+    else
+    {
+        scoreBoardNextRoundBtn.querySelector("p").textContent = "Main Menu"; 
+    }
 });
 
 socket.on ("g_UpdateScoreBoard_HideBtn", () => {
@@ -141,16 +159,17 @@ socket.on ("g_UpdateScoreBoard_HideBtn", () => {
 });
 
 socket.on ("g_StartNextRoundSuccess", (strStartingCard) => {
-    const scoreDlg = document.querySelector (".scoreDlg");
-    if (scoreDlg)
-    {
-        //Hide the score dialog
-        scoreDlg.style.display = "none";
-    }
-
+    UGi_SetScoreBoardVisibility (false);
     UG_UpdateCurrentCard (strStartingCard, null);
 });
 
+function UGi_SetScoreBoardVisibility (bShow)
+{
+    const scoreBoardDlg = document.querySelector (".scoreDlg");
+    if (!scoreBoardDlg) { console.log ("Error..."); return; }
+    console.log ("SetVisibility ScoreBoard: " + bShow);
+    scoreBoardDlg.style.display = (bShow ? "flex" : "none");
+}
 function UGi_GetPlayerFromName (strPlayerName)
 {
     for (let i = 0; i < nMaxPlayers; i++)

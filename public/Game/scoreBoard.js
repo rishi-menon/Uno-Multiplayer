@@ -13,7 +13,16 @@ scoreDlg_CloseBtn.addEventListener ("click", () => {
 
 // Next Round Btn
 scoreDlg_NextRound.addEventListener ("click", () => {
-    socket.emit ("g_StartNextRound");
+    if (ug_strPlayerHasWon == "")
+    {
+        socket.emit ("g_StartNextRound");
+    }
+    else
+    {
+        //Quit the room
+        socket.emit ("g_DestroyRoom", "Host has left the room");
+        window.location.pathname = "/index.html";
+    }
 });
 
 

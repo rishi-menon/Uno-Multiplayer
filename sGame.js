@@ -48,6 +48,7 @@ let mapSocketIdToRoomCode = new Map();
 
 const nMaxPlayersInRoom = 8;
 const nInitialCards = 7;
+const nMaxRounds = 4;
 
 const cardGenerator = require ("./sCardGenerator.js");
 
@@ -82,9 +83,23 @@ module.exports.OnNewConnection = function (socket) {
     socket.on ("g_PlayerEndTurn", (strCurrentCard, cardMeta) => {
         PlayerEndedTurn (socket, strCurrentCard, cardMeta);
     });
+
+    socket.on ("g_DestroyRoom", (strErrorMessage) => {
+        DestroyRoom (socket, strErrorMessage);
+    });
 }
 
 
+function DestroyRoom (socket, strErrorMessage)
+{
+    const {roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex} = GetGenericValuesFromSocket (socket.id, "DestroyRoom");
+    if (nServerIndex == -1) { Log(LogWarn, "Could not destroy room"); return; }
+
+    //display error message
+    socket.to (strRoomCode).emit ("g_DisplayErrorMessage", strErrorMessage);
+    io.in (strRoomCode).emit ("g_SetScoreBoardVisibility", false);
+    LeaveRoom (socket);
+}
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////
@@ -131,6 +146,18 @@ function h_RemoveCardFromPlayer (player, strCard)
         }
     }
     return false;
+}
+
+function h_PlayerWonRound (strRoomCode, mapValue, nServerIndex)
+{
+    const playerData = mapValue.players[nServerIndex];
+    playerData.winCount += 1;
+    mapValue.game.bRoundStarted = false;
+
+    io.in (strRoomCode).emit ("g_SetScoreBoardVisibility", true);
+    // const hostSocketId = mapValue.players[mapValue.hostIndex].socketId;
+    
+    UpdateScoreBoard (strRoomCode);
 }
 
 function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
@@ -181,8 +208,8 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     }
 
     //Update all the other players now that the current player has picked a card/thrown a card.. Must be done after h_RemoveCardFromPlayer()
+    const playerData = mapValue.players[nServerIndex];
     {
-        const playerData = mapValue.players[nServerIndex];
         const cardsArray = playerData.cards;
         let cardsData = [];
         for (let i = 0; i < cardsArray.length; i++)
@@ -192,6 +219,16 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
         // console.log ("Updating other players");
         socket.to (strRoomCode).emit ("g_UpdateOtherPlayerCards", playerData.name, cardsData);
     }
+
+    //Check if the current player who threw a card won the round ?
+    {
+        if (playerData.cards.length === 0)
+        {
+            console.log ("Player won: " + playerData.name);
+            h_PlayerWonRound (strRoomCode, mapValue, nServerIndex);
+        }
+    }
+        
     
     const nNextPlayerIndex = h_CalculateNextPlayerTurn (mapValue, strCardCol, strCardType);
     mapValue.game.nTurnIndex = nNextPlayerIndex;    //mapValue.game.nTurnIndex is kinda redundant at the moment as we could use nClientIndex to figure out whos turn it currently is...
@@ -400,6 +437,19 @@ function UpdateScoreBoard(strRoomCode)
     let mapValue = mapRoomCodeToPlayers.get(strRoomCode);
     if (!mapValue) return;
 
+    //Check if any player won
+    let nPlayerWonIndex = -1;
+    let nPlayerWonName = "";
+    for (let i = 0; i < mapValue.count; i++)
+    {
+        if (mapValue.players[i].winCount >= nMaxRounds)
+        {
+            nPlayerWonIndex = i;
+            nPlayerWonName = mapValue.players[i].name;
+            break;
+        }
+    }
+
     const data = GenerateScoreBoardData (mapValue);
     if (data)
     {
@@ -410,7 +460,7 @@ function UpdateScoreBoard(strRoomCode)
         {
             //Only host can start the next round
             let playerSocketId = mapValue.players[mapValue.hostIndex].socketId;
-            io.to(playerSocketId).emit("g_UpdateScoreBoard_ShowBtn");
+            io.to(playerSocketId).emit("g_UpdateScoreBoard_ShowBtn", nPlayerWonName);
         }
     }
 
