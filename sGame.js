@@ -197,7 +197,7 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     mapValue.game.nTurnIndex = nNextPlayerIndex;    //mapValue.game.nTurnIndex is kinda redundant at the moment as we could use nClientIndex to figure out whos turn it currently is...
 
     //Start the next players turn
-    io.in (strRoomCode).emit ("g_StartTurn", mapValue.players[nNextPlayerIndex].name);
+    io.in (strRoomCode).emit ("g_StartTurn", mapValue.players[nNextPlayerIndex].name, cardMeta);
 } 
 
 

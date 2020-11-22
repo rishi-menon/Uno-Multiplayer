@@ -10,17 +10,16 @@ let ug_bPlayerDisconnected = false;
 
 let ug_strCurrentCardColor;
 let ug_strCurrentCardType;
-//If you change the name then you would have to change it in server file as well
-const ug_strCurrentCardMeta = {bCardThrown: false};
+
+//Note: If you change the name then you would have to change it in server file as well
+//nForceDraw gets set to 1 when its a draw2 and gets set to 2 when its a draw4... The value will be the number of cards to pick up which allows people to chain draw2 together
+//strAdditionalCol gets set to the color chosen when a wild or draw 4 is thrown
+const ug_currCardMeta = {bCardThrown: false, nForceDraw: 0, nForceDrawValue: 0, strAdditionalCol: ""};
 
 let ug_bSelfTurn = false;
 
 const nRoundsToWin = 4;
 const nMaxPlayers = 8;
-
-function UGi_ResetCurrMeta () {
-    ug_strCurrentCardMeta.bCardThrown = false;
-}
 
 socket.on("connect", () => {
     if (!ug_bPlayerDisconnected)
@@ -165,7 +164,7 @@ function UGi_GetPlayerFromName (strPlayerName)
 }
 let ug_prevTurnPlayer = null;
 
-socket.on ("g_StartTurn", (strPlayerTurn) => {
+socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
     
     //Reset the previous players color back to 0 as it isnt their turn anymore
     if (ug_prevTurnPlayer)
@@ -178,22 +177,37 @@ socket.on ("g_StartTurn", (strPlayerTurn) => {
     ePlayerTurn.querySelector ("p").style.color = "#ff0000";
     ug_prevTurnPlayer = ePlayerTurn;
 
+    if (metaData)
+    {
+        ug_currCardMeta.nForceDraw = metaData.nForceDraw;
+        ug_currCardMeta.nForceDrawValue = metaData.nForceDrawValue;
+        ug_currCardMeta.strAdditionalCol = metaData.strAdditionalCol;
+    }
+    else
+    {
+        //Reset this back to 0 ??
+        ug_currCardMeta.nForceDraw = 0;
+        ug_currCardMeta.nForceDrawValue = 0;
+        ug_currCardMeta.strAdditionalCol = "";
+    }
+
+    UGi_WildShowColorChosen (ug_currCardMeta.strAdditionalCol); //Hide/show the chosen color
+
     //To do: Add better visuals for the current players turn
     if (ePlayerTurn === uc_playerSelf)
     {
-        console.log ("Its your turn");
         //Its your turn
         ug_bSelfTurn = true;
-        const eCurrentCard = document.querySelector (".currentCard");
-        // UC_HighlightCard (eCurrentCard, true);
+        // const eCurrentCard = document.querySelector (".currentCard");
     }
     else
     {
         //Its not your turn
         ug_bSelfTurn = false;
-        const eCurrentCard = document.querySelector (".currentCard");
-        // UC_HighlightCard (eCurrentCard, false); 
+        // const eCurrentCard = document.querySelector (".currentCard");
     }
+    // UC_HighlightCard (eCurrentCard, false); 
+    
 });
 
 socket.on ("g_UpdateSelfCardsCount", (data) => {
@@ -229,9 +243,21 @@ document.querySelector (".deckCard").addEventListener ("click", () => {
     if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot draw card"); return; }
     if (ug_bSelfTurn !== true) { return; }
 
-    UGi_DrawCard (1);
+    if (ug_currCardMeta.nForceDraw != 0)
+    {
+        if (ug_currCardMeta.nForceDrawValue == 0) { console.log ("Error..."); ug_currCardMeta.nForceDrawValue = 1; }
+        UGi_DrawCard (ug_currCardMeta.nForceDrawValue);
+    }
+    else
+    {
+        UGi_DrawCard (1);
+    }
 
     //To do: Add a feature where player can draw a card and has the option to throw it... In that case, server should emit g_UpdateSelfCardsCount (call a function with the right parameters) so that players card will update... Also dont call end turn immediateley... You also might have to add a end turn button so that the player isnt forced to throw a card if they dont want to 
+    ug_currCardMeta.bCardThrown = false;
+    ug_currCardMeta.nForceDraw = 0;
+    ug_currCardMeta.nForceDrawValue = 0;
+    
     UGi_EndTurn();
 });
 
@@ -273,7 +299,67 @@ function UGi_SetScoreBoardDetails (data, strRoomCode) {
         element.style.display = "none";
     }
 }
-//////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////v
+//////////
+
+document.querySelectorAll (".wildChooseColor .block").forEach ((block) => {
+    block.addEventListener ("click", () => {
+        ug_currCardMeta.strAdditionalCol = block.getAttribute ("blockCol");
+        console.log (ug_currCardMeta.strAdditionalCol);
+        UGi_WildShowColorPicker (false);    //Hide the color picker
+        UGi_EndTurn();
+    });
+});
+
+//Wild/Draw4 Color Picker
+function UGi_WildShowColorPicker (bShow) {
+    const ele = document.querySelector (".wildChooseColor");
+    if (!ele) { console.log ("Error..."); return; }
+    const strVal = (bShow === true ? "flex" : "none");
+    ele.style.display = strVal;
+}
+
+//Wild/Draw4 show color chosen
+function UGi_WildShowColorChosen (strCol)
+{
+    const ele = document.querySelector (".wildColorChoosen");
+    if (!ele) { console.log ("Error..."); return; }
+
+    if (strCol === "")
+    {
+        ele.style.display = "none";
+        return;
+    }
+    else
+    {
+        ele.style.display = "flex";
+        if (strCol == "red")
+        {
+            ele.style.background = "#EF5555"
+        }
+        else if (strCol == "blue")
+        {
+            ele.style.background = "#0066FF"
+        }
+        else if (strCol == "green")
+        {
+            ele.style.background = "#00CC5E"
+        }
+        else if (strCol == "yellow")
+        {
+            ele.style.background = "#FFF50F"
+        }
+        else
+        {
+            console.log ("Error...");
+            return;
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////
 
 //If strMessage is "" then the dialog is hidden
 function UGi_DisplayError (strMessage)
@@ -327,16 +413,47 @@ function UG_CardOnClick(eCard) {
     
     if (bCanThrowCard)
     {
+        let bEndTurn = true;
+
         //To do: Add animations to show the card moving ?
         ug_strCurrentCardColor = strColor;
         ug_strCurrentCardType = strType;
         
-        UGi_ResetCurrMeta ();
-        ug_strCurrentCardMeta.bCardThrown = true;
+        //Set meta data
+        ug_currCardMeta.bCardThrown = true;
+        if (strType === "draw2")
+        {
+            ug_currCardMeta.nForceDraw = 1;
+            ug_currCardMeta.nForceDrawValue += 2;
+        }
+        else if (strType === "draw4")
+        {
+            ug_currCardMeta.nForceDraw = 2;
+            ug_currCardMeta.nForceDrawValue += 4;
+        }
+        else
+        {
+            ug_currCardMeta.nForceDraw = 0;
+            ug_currCardMeta.nForceDrawValue = 0;
+        }
+
+        if (strColor === "black")
+        {
+            bEndTurn = false;
+            //Bring up the color picker
+            UGi_WildShowColorPicker (true);
+        }
+        else
+        {
+            //Player threw a non color change card... When the server send the StartNextTurn signal, the clients will all end up hiding the current color
+            ug_currCardMeta.strAdditionalCol = "";  
+        }
+
 
         UC_SetCurrentCard (strColor + "-" + strType);
         UC_RemoveCard (eCard);
-        UGi_EndTurn ();
+        if (bEndTurn)
+            UGi_EndTurn ();
     }
 
 }
@@ -348,6 +465,24 @@ function UGi_ThrowCardIsValid (strCardCol, strCardType, strCurrentCol, strCurren
     if (strCardCol ===  strCurrentCol ||
         strCardType ===  strCurrentType  ||
         strCardCol === "black") { bCanThrowCard = true; }
+
+    //To Do: Add an additional check for wild cards
+    if (ug_currCardMeta.strAdditionalCol !== "" && ug_currCardMeta.strAdditionalCol === strCardCol)
+    {
+        bCanThrowCard = true;
+    }
+
+    //Check for force draw2(1) and draw4(2)
+    if (ug_currCardMeta.nForceDraw == 1)
+    {
+        //You can only throw a draw2 in this case
+        bCanThrowCard = (strCardType == "draw2");
+    }
+    else if (ug_currCardMeta.nForceDraw == 2)
+    {
+        //You can only throw a draw4 in this case
+        bCanThrowCard = (strCardType == "draw4");
+    }
 
     return bCanThrowCard;
 }
@@ -364,5 +499,5 @@ function UGi_EndTurn ()
     uc_playerSelf.querySelector ("p").style.color = "#efefef";
 
     const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;    
-    socket.emit ("g_PlayerEndTurn", strCard, ug_strCurrentCardMeta);
+    socket.emit ("g_PlayerEndTurn", strCard, ug_currCardMeta);
 }
