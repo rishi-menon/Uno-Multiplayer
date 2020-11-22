@@ -107,7 +107,7 @@ function DestroyRoom (socket, strErrorMessage)
 
 
 //Helper function which is probably going to be used only once
-function h_CalculateNextPlayerTurn (mapValue, strCardColor, strCardType)
+function h_CalculateNextPlayerTurn (mapValue, strCardColor, strCardType, bCardThrown)
 {
     //calculate index of current player in the order
     const nStringIndexCur = mapValue.game.strPlayerOrder.indexOf (mapValue.game.nTurnIndex);
@@ -117,7 +117,7 @@ function h_CalculateNextPlayerTurn (mapValue, strCardColor, strCardType)
     let nStringIndexNew = nStringIndexCur;
     nStringIndexNew += (mapValue.game.bClockwise) ? 1 : -1;
 
-    if (strCardType == "skip")
+    if (bCardThrown === true && strCardType == "skip")
     {
         nStringIndexNew += (mapValue.game.bClockwise) ? 1 : -1;
     }
@@ -230,7 +230,7 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     }
         
     
-    const nNextPlayerIndex = h_CalculateNextPlayerTurn (mapValue, strCardCol, strCardType);
+    const nNextPlayerIndex = h_CalculateNextPlayerTurn (mapValue, strCardCol, strCardType, cardMeta.bCardThrown);
     mapValue.game.nTurnIndex = nNextPlayerIndex;    //mapValue.game.nTurnIndex is kinda redundant at the moment as we could use nClientIndex to figure out whos turn it currently is...
 
     //Start the next players turn
