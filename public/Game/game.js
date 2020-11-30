@@ -402,7 +402,7 @@ function UGi_DisplayError (strMessage)
 //////////////////////////////////////////////////
 
 function UG_UpdateCurrentCard (strCurrCard, cardMeta) {
-    UC_SetCurrentCard (strCurrCard);
+    AC_SetCurrentCardAnim (strCurrCard);
     let cardObj = UC_ParseCard (strCurrCard);
     if (cardObj)
     {
@@ -434,7 +434,6 @@ function UG_CardOnClick(eCard) {
     {
         let bEndTurn = true;
 
-        //To do: Add animations to show the card moving ?
         ug_strCurrentCardColor = strColor;
         ug_strCurrentCardType = strType;
         
@@ -469,7 +468,8 @@ function UG_CardOnClick(eCard) {
         }
 
 
-        UC_SetCurrentCard (strColor + "-" + strType);
+        //This will get set by the animation
+        AC_SetCurrentCardAnim (strColor + "-" + strType);    
         UC_RemoveCard (eCard);
         if (bEndTurn)
             UGi_EndTurn ();

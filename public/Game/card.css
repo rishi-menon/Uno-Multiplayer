@@ -130,7 +130,22 @@
 
 .middleMiddle img {
     max-width: var(--deck-max-width);
-
     box-sizing: content-box;
     margin: 0rem 1rem;
+}
+
+
+
+.AnimationCard {
+    position: absolute;
+    max-width: var(--deck-max-width);
+    
+    bottom: 10rem;
+    left: 10rem;
+}
+
+.AnimationCard {
+    top: 577px;
+    left: 460px;
+    /* transform: translateX(50%); */
 }

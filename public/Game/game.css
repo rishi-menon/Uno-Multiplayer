@@ -174,3 +174,29 @@ section.middle {
     -o-transition: 3s; */
     transition: 0.5s;
 }
+
+.playerCtnHor p, .playerCtnVer p {
+    margin: 0.5rem 0.5rem;
+}
+
+
+.currentCard
+{
+    /* These two lines get set from javascript */
+    /* animation-name: rotateCurrentCard; */
+    /* animation-duration: 2s; */
+
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-timing-function: linear;
+
+    /* animation: rotateCurrentCard var(--currentCardAnimationTime) linear 0s infinite normal; */
+}
+
+@keyframes rotateCurrentCard {
+    0%    { transform: rotateZ(0deg); filter: grayscale(0%);  }
+    10%    { transform: rotateZ(36deg); filter: grayscale(100%);  } 
+    50%    { transform: rotateZ(180deg); filter: grayscale(100%);   }
+    100%  { transform: rotateZ(360deg); filter: grayscale(0%);  }
+}
