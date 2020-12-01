@@ -180,7 +180,15 @@ section.middle {
 }
 
 
-.currentCard
+.player0 h1 {
+    color: #efefef;
+    font-weight: normal;
+    font-family: 'Merienda', cursive;
+    font-size: 32px;
+    display: none;
+}
+
+.currentCard, .deckCard
 {
     /* These two lines get set from javascript */
     /* animation-name: rotateCurrentCard; */
@@ -200,3 +208,4 @@ section.middle {
     50%    { transform: rotateZ(180deg); filter: grayscale(100%);   }
     100%  { transform: rotateZ(360deg); filter: grayscale(0%);  }
 }
+

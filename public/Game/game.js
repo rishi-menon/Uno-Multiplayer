@@ -16,7 +16,10 @@ let ug_strCurrentCardType;
 //strAdditionalCol gets set to the color chosen when a wild or draw 4 is thrown
 const ug_currCardMeta = {bCardThrown: false, nForceDraw: 0, nForceDrawValue: 0, strAdditionalCol: ""};
 
-let ug_bSelfTurn = false;
+//0: false, not your turn
+//1: it is your turn and you can throw a card
+//2: it is your turn but you already threw a black card and you havent chosen a color yet... You cannot throw another card nor draw a card from deck... 
+let ug_nSelfTurn = 0;
 let ug_strPlayerHasWon = "";
 
 const nRoundsToWin = 4;
@@ -70,7 +73,7 @@ function UGi_InitJoinRoomFailed (strMessage) {
 }
 
 socket.on ("g_DisplayErrorMessage", (strError) => {
-    ug_bSelfTurn = false;   //Not required but just in case
+    ug_nSelfTurn = 0;   //Not required but just in case
     UGi_DisplayError (strError);
 })
 
@@ -188,12 +191,12 @@ socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
     //Reset the previous players color back to 0 as it isnt their turn anymore
     if (ug_prevTurnPlayer)
     {
-        ug_prevTurnPlayer.querySelector("p").style.color = "#efefef";
+        ug_prevTurnPlayer.querySelector("p").style.backgroundColor = "transparent";
     }
     
     let ePlayerTurn = UGi_GetPlayerFromName (strPlayerTurn);
-    //Set current players turn to red after setting all the other players to white (for loop)
-    ePlayerTurn.querySelector ("p").style.color = "#ff0000";
+    //Set background color for the current player
+    ePlayerTurn.querySelector ("p").style.backgroundColor = "#00aa00";
     ug_prevTurnPlayer = ePlayerTurn;
 
     if (metaData)
@@ -213,16 +216,19 @@ socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
     UGi_WildShowColorChosen (ug_currCardMeta.strAdditionalCol); //Hide/show the chosen color
 
     //To do: Add better visuals for the current players turn
+    const yourTurnTextEle = document.querySelector (".player0 h1");
     if (ePlayerTurn === uc_playerSelf)
     {
         //Its your turn
-        ug_bSelfTurn = true;
+        ug_nSelfTurn = 1;
+        yourTurnTextEle.style.display = "flex";
         // const eCurrentCard = document.querySelector (".currentCard");
     }
     else
     {
         //Its not your turn
-        ug_bSelfTurn = false;
+        ug_nSelfTurn = 0;
+        yourTurnTextEle.style.display = "none";
         // const eCurrentCard = document.querySelector (".currentCard");
     }
     // UC_HighlightCard (eCurrentCard, false); 
@@ -236,8 +242,14 @@ socket.on ("g_UpdateSelfCardsCount", (data) => {
 
 socket.on ("g_UpdateThrownCard", (strCurrentCard, cardMeta) => {
     console.log ("Update thrown card");
-    //To do: If a wild card was thrown then show which color the other player selected inside the following function... Also if a wild card was thrown by another player then the selected colour should be highlighted or something to indicate which color
-    UG_UpdateCurrentCard (strCurrentCard, cardMeta);
+    if (cardMeta.bCardThrown === true)
+    {
+        UG_UpdateCurrentCard (strCurrentCard, cardMeta);
+    }
+    else
+    {
+        AC_StartDeckAnim ()
+    }
 });
 
 socket.on ("g_UpdateOtherPlayerCards", (strPlayerName, cardsData) => {
@@ -260,7 +272,7 @@ function UGi_DrawCard (nCardsToDraw)
 //Draw a card
 document.querySelector (".deckCard").addEventListener ("click", () => {
     if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot draw card"); return; }
-    if (ug_bSelfTurn !== true) { return; }
+    if (ug_nSelfTurn !== 1) { return; }
 
     if (ug_currCardMeta.nForceDraw != 0)
     {
@@ -271,7 +283,7 @@ document.querySelector (".deckCard").addEventListener ("click", () => {
     {
         UGi_DrawCard (1);
     }
-
+    AC_StartDeckAnim ();
     //To do: Add a feature where player can draw a card and has the option to throw it... In that case, server should emit g_UpdateSelfCardsCount (call a function with the right parameters) so that players card will update... Also dont call end turn immediateley... You also might have to add a end turn button so that the player isnt forced to throw a card if they dont want to 
     ug_currCardMeta.bCardThrown = false;
     ug_currCardMeta.nForceDraw = 0;
@@ -420,7 +432,7 @@ function UG_UpdateCurrentCard (strCurrCard, cardMeta) {
 //function gets called when the player clicks on their OWN card
 function UG_CardOnClick(eCard) {
     if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot click on card"); return; }
-    if (ug_bSelfTurn !== true) { return; }
+    if (ug_nSelfTurn !== 1) { return; }
 
     const strColor = eCard.getAttribute ("cardColor");
     const strType = eCard.getAttribute ("cardType");
@@ -460,6 +472,7 @@ function UG_CardOnClick(eCard) {
             bEndTurn = false;
             //Bring up the color picker
             UGi_WildShowColorPicker (true);
+            ug_nSelfTurn = 2;   //If player throws a black card, they can no longer throw other cards, because they have to choose a color... Their turn isnt yet over tho so set it to 2 instead of 0
         }
         else
         {
@@ -467,10 +480,11 @@ function UG_CardOnClick(eCard) {
             ug_currCardMeta.strAdditionalCol = "";  
         }
 
-
+        UGi_WildShowColorChosen ("");   //Remove the wild color if its being shown currently
         //This will get set by the animation
         AC_SetCurrentCardAnim (strColor + "-" + strType);    
         UC_RemoveCard (eCard);
+
         if (bEndTurn)
             UGi_EndTurn ();
     }
@@ -511,8 +525,8 @@ function UGi_ThrowCardIsValid (strCardCol, strCardType, strCurrentCol, strCurren
 
 function UGi_EndTurn ()
 {
-    if (ug_bSelfTurn !== true) { console.log ("Error..."); return; }
-    ug_bSelfTurn = false;
+    if (ug_nSelfTurn === 0) { console.log ("Error..."); return; }
+    ug_nSelfTurn = 0;
 
     //Visual Stuff
     uc_playerSelf.querySelector ("p").style.color = "#efefef";

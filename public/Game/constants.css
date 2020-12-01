@@ -10,7 +10,7 @@ html {
 
     /* ------------------------------------ */
 
-    --section-middle-height: 60%;
-    --section-top-height: calc(50% - var(--section-middle-height)/2);
-    --section-bottom-height: calc(50% - var(--section-middle-height)/2);
+    --section-middle-height: 57%;
+    --section-top-height: 20%;
+    --section-bottom-height: 23%;
 }

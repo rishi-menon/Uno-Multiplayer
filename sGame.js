@@ -190,11 +190,11 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
         return;
     }
 
+    socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
+    
     //Update the current card for the other players
     if (cardMeta.bCardThrown === true)
     {
-        socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
-        
         //reverse the direction before calculating who the next player is (Reverse only if that card was thrown)
         if (strCardType == "reverse")
         {
