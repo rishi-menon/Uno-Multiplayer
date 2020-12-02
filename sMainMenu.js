@@ -1,7 +1,7 @@
 
 /////          Public data.. Gets set in Init
 let io;
-
+let gameCache;
 
 /////          Local Data
 //Map of room code to player objects
@@ -46,8 +46,9 @@ function Log (level, strMessage) {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 //Public API
-module.exports.Init = function(_io) {
+module.exports.Init = function(_io, _gameCache) {
     io=_io;
+    gameCache = _gameCache;
 }
 
 module.exports.OnNewConnection = function (socket) {
@@ -273,7 +274,7 @@ function JoinRoom (socket, strRoomCode, strPlayerName) {
 function GenerateRoomCode () {
     const nMaxTries = 20;
     let roomCode = "";
-    const strLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const strLetters = "abcdefghijklmnopqrstuvwxyz";
     let bIsTaken = true;
 
     for (let i = 0; i < nMaxTries && bIsTaken; i++)
@@ -285,6 +286,9 @@ function GenerateRoomCode () {
             roomCode += strLetters[randindex];
         }
         bIsTaken = mapRoomCodeToPlayers.has(roomCode);
+        
+        //Reserved room code. This room code will never be generated. This is for testing purposes
+        if (roomCode == "xyzw") { bIsTaken = true; }
     }
 
     if (bIsTaken)

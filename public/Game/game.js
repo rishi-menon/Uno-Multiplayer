@@ -1,5 +1,3 @@
-let ug_strJoinCode = "SecretCode"
-
 const ug_nGenericTimeout = 3500;    //ms
 //Timeout booleans
 let ug_bInitJoinRoom = false;
@@ -30,7 +28,9 @@ socket.on("connect", () => {
     {
         console.log("connected");
         ug_bInitJoinRoom = false;
-        socket.emit("g_InitJoinRoom", ug_strJoinCode);
+
+        const strCode = GetUrlValue("id");
+        socket.emit("g_InitJoinRoom", strCode);
         
         setTimeout (UGi_InitJoinRoomFailed, ug_nGenericTimeout, "Server did not respond in time");
 

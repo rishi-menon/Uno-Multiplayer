@@ -241,7 +241,6 @@ module.exports.GetCard = function ()
     //     }
     //     cardsSeen = [];
     // }
-    return (Math.random() > 0.2) ? cards[r] : "black-wild";
     return cards[r];
 }
 

@@ -1,5 +1,6 @@
 /////          Public data.. Gets set in Init
 let io;
+let gameCache;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////                              Logging
@@ -53,8 +54,9 @@ const nMaxRounds = 4;
 const cardGenerator = require ("./sCardGenerator.js");
 
 //Public API
-module.exports.Init = function(_io) {
+module.exports.Init = function(_io, _gameCacheObj) {
     io = _io;
+    gameCache = _gameCacheObj
 }
 
 module.exports.OnNewConnection = function (socket) {
@@ -345,29 +347,22 @@ function LeaveRoom (socket) {
 
 function InitJoinRoom (socket, strCode) {
     Log (LogTrace, "InitJoinRoom: " + strCode);
+    if (!strCode) { return; }
 
     //To do: Calculate this value from strCode
-    let strRoomCode = "ABCD";
-    let strPlayerName = "";
-    let bIsHost = true;
+    const cacheVal = gameCache.GetPlayerCache (strCode);
+    if (!cacheVal) { 
+        Log (LogWarn, "Id does not exist in gameCache: " + strCode); 
+        socket.emit ("g_InitJoinRoomFailure", "Error: Invalid id");
+        return; 
+    }
+
+    let strRoomCode = cacheVal.strRoomCode;
+    let strPlayerName = cacheVal.strPlayerName;
+    let bIsHost = cacheVal.bIsHost;
 
     const nPlayerWins = 0;
-
-
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
-
-
-    //To do: temp code
-    if (!mapValue)
-    {
-        strPlayerName = "Rishi0"
-    }
-    else
-    {
-        strPlayerName = "Rishi" + mapValue.count;
-    }
-
-
 
     if (!mapValue) {
         //Create the object and insert it into the map
@@ -409,14 +404,6 @@ function InitJoinRoom (socket, strCode) {
     mapValue.players[nPlayerIndex] = { name: strPlayerName, socketId: socket.id, winCount: nPlayerWins };
     mapValue.players[nPlayerIndex].cards = [];
     mapValue.count += 1;
-
-    //To do: temp code.. remove once you calculate bIsHost from the strCode
-    if (mapValue.hasOwnProperty ("hostIndex"))
-    {
-        bIsHost = false;
-    }
-    
-
     
     if (bIsHost)
     {
