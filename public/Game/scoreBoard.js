@@ -35,5 +35,5 @@ const errorDlg_closeBtn = errorDlg.querySelector (".errorDlg_CloseBtn");
 
 errorDlg_closeBtn.addEventListener ("click", () => {
     socket.emit ("g_PlayerLeaveRoom");
-    window.location.pathname = "/index.html";
+    window.location = "/index.html";
 });

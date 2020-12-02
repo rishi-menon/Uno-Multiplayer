@@ -347,7 +347,6 @@ function LeaveRoom (socket) {
 
 function InitJoinRoom (socket, strCode) {
     Log (LogTrace, "InitJoinRoom: " + strCode);
-    if (!strCode) { return; }
 
     //To do: Calculate this value from strCode
     const cacheVal = gameCache.GetPlayerCache (strCode);

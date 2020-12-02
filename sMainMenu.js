@@ -69,16 +69,60 @@ module.exports.OnNewConnection = function (socket) {
 
     socket.on ("m_PlayerLeftRoom", () => {
         LeaveRoom (socket);
-    })
+    });
 
     socket.on("m_KickPlayerFromRoom", (nPlayerIndex) => {
         KickPlayerFromRoom (socket, nPlayerIndex);
-    })
+    });
+
+    socket.on("m_StartGame", () => {
+        StartGame (socket);
+    });
 }
 
 
 
+function StartGame (socket) {
+    const strRoomCode = mapSocketIdToRoomCode.get(socket.id);
+    if (!strRoomCode)
+    {
+        Log (LogInfo, "sMainMenu.js: StartGame: socket dne in map:  " + socket.id);
+        return;
+    }
+    
+    const mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+    if (!mapValue)
+    {
+        Log (LogInfo, "sMainMenu.js: StartGame: room code dne in map:  " + strRoomCode);
+        return;
+    }
 
+    let index = -1;
+    for (let i = 0; i < mapValue.count; i++)
+    {
+        if (mapValue.players[i].socketId === socket.id)
+        {
+            index = i;
+            break;
+        }
+    }
+    if (index === -1) {
+        Log (LogWarn, "sMainMenu.js: StartGame: Couldn\'t find index");     
+        return;
+    }
+
+    ///////
+
+    for (let i = 0; i < mapValue.count; i++)
+    {
+        const val = mapValue.players[i];
+        if (!val) { Log(LogError, "StartGame: Something went wrong"); continue; }
+
+        const bIsHost = (i === 0);
+        const strId = gameCache.SetPlayerCache (strRoomCode, val.name, bIsHost);
+        io.to(val.socketId).emit ("m_RedirectToGame", strId);
+    }
+}
 
 
 

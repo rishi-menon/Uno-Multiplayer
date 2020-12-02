@@ -6,12 +6,21 @@
 // console.log("Domain: " + strDomain);
 
 const socket = io();
+let bDisconnected = false;
 
 socket.on("connect", () => {
-        // console.log("connected");
+        console.log("connected");
+        bDisconnected = false;
+        
+        //Test... Keep the socket open ?
+        setInterval (() => {
+            if (!bDisconnected)
+                socket.emit ("_NonExistantMessage_");
+        }, 500);
 });
 
 socket.on("disconnect", () => {
+    bDisconnected = true;
     ShowErrorMessage ("You have been disconnected. Please try again");
 })
 
@@ -272,8 +281,17 @@ socket.on ("m_UpdateHostButtons", (bShowButtons) => {
 
 e_roomDlgStartGameBtn.addEventListener ("click", () => {
     console.log("Start Game"); 
-    window.location.href = "http://localhost:3000/game.html"; 
+    socket.emit ("m_StartGame");
+    
 })
+
+socket.on ("m_RedirectToGame", (strId) => {
+    if (!strId) { console.log ("Error..."); return; }
+    // console.log ("Redirecting: Id = " + strId);
+    window.location = "/game.html?id=" + strId;
+});
+
+
 
 
 ////////////          Kick player

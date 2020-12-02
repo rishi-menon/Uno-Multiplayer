@@ -36,7 +36,8 @@ socket.on("connect", () => {
 
         //Test... Keep the socket open ?
         setInterval (() => {
-            socket.emit ("_NonExistantMessage_");
+            if (!ug_bPlayerDisconnected)
+                socket.emit ("_NonExistantMessage_");
         }, 500);
     }
 });

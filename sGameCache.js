@@ -71,7 +71,7 @@ function GetRandomString (nCount)
 
 function GetUniqueString (nCount)
 {
-    const nMaxAttempts = 20;
+    const nMaxAttempts = 1000;
     for (let i = 0; i < nMaxAttempts; i++)
     {
         const strId = GetRandomString (nCount);
