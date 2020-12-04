@@ -84,7 +84,6 @@ e_createRoomBtn.addEventListener ('click', () => {
 //Join a room btn
 e_joinRoomBtn.addEventListener ('click', () => {
     if (!bCanClickMainMenuBtns) return;
-
     e_enterName_error.style.display = "none"; //disable the error message
     e_enterName_dlgTitle.textContent = "Join A Room"
     e_enterNameDlg.style.display = "flex";
@@ -131,6 +130,7 @@ e_enterName_submitBtn.addEventListener ('click', () => {
 
     //Validation is over, we can send the request to the server now
     strPlayerName = strName;  //The room code gets set only if the join/create operation was successful
+    e_enterName_error.style.display = "none";
     if (nEnterNameDlgState === StateEnterName_CreateRoom)
     {
         //Create a room
