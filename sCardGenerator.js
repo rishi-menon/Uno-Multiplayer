@@ -1,4 +1,4 @@
-let cards = [
+const cards = [
     "red-0",
     "red-1",
     "red-2",
@@ -116,110 +116,6 @@ let cards = [
 
 ];
 
-
-
-
-// const cards = [
-//     "red-0",
-//     "blue-0",
-//     "green-0",
-//     "yellow-0",
-//     "red-1",
-//     "blue-1",
-//     "blue-reverse",
-//     "green-1",
-//     "yellow-1",
-//     "red-2",
-//     "black-wild",
-//     "blue-2",
-//     "green-2",
-//     "yellow-draw2",
-//     "yellow-2",
-//     "red-3",
-//     "blue-3",
-//     "green-draw2",
-//     "green-3",
-//     "yellow-3",
-//     "red-4",
-//     "blue-4",
-//     "green-4",
-//     "yellow-4",
-//     "red-5",
-//     "yellow-skip",
-//     "blue-5",
-//     "green-5",
-//     "yellow-5",
-//     "green-skip",
-//     "red-6",
-//     "blue-6",
-//     "green-6",
-//     "yellow-6",
-//     "red-7",
-//     "blue-7",
-//     "black-draw4",
-//     "green-7",
-//     "yellow-7",
-//     "red-8",
-//     "blue-8",
-//     "green-8",
-//     "yellow-8",
-//     "red-9",
-//     "blue-9",
-//     "green-9",
-//     "yellow-9",
-//     "red-0",
-//     "blue-0",
-//     "green-0",
-//     "yellow-0",
-//     "blue-draw2",
-//     "red-1",
-//     "blue-1",
-//     "green-1",
-//     "blue-skip",
-//     "yellow-1",
-//     "red-2",
-//     "blue-2",
-//     "green-2",
-//     "yellow-2",
-//     "red-3",
-//     "blue-3",
-//     "green-3",
-//     "red-reverse",
-//     "yellow-3",
-//     "red-4",
-//     "blue-4",
-//     "green-4",
-//     "yellow-4",
-//     "yellow-reverse",
-//     "red-5",
-//     "blue-5",
-//     "red-skip",
-//     "green-5",
-//     "yellow-5",
-//     "red-6",
-//     "blue-6",
-//     "black-wild",
-//     "green-6",
-//     "yellow-6",
-//     "red-7",
-//     "blue-7",
-//     "green-7",
-//     "yellow-7",
-//     "red-draw2",
-//     "black-draw4",
-//     "red-8",
-//     "blue-8",
-//     "green-8",
-//     "yellow-8",
-//     "red-9",
-//     "green-reverse",
-//     "blue-9",
-//     "green-9",
-//     "yellow-9",
-// ];
-
-
-
 module.exports.GetCard = function () 
 {
     const r = Math.floor(Math.random() * cards.length);
@@ -252,4 +148,67 @@ module.exports.GetCards = function (nCount)
         cards[i] = module.exports.GetCard ();
     }
     return cards;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+const mapDeckCards = new Map();
+
+module.exports.GetCardDeck = function (strRoomCode)
+{
+    let deck;
+    if (!mapDeckCards.has (strRoomCode))
+    {
+        //Create a deck
+        deck = CreateDeck();
+        mapDeckCards.set (strRoomCode, deck);
+    }
+    else
+    {
+        deck = mapDeckCards.get (strRoomCode);
+    }
+
+    if (deck.length <= 0)
+    {
+        ResetDeck (deck); 
+    }
+
+    console.log ("Deck length: " + deck.length);
+    const r = Math.floor(Math.random() * deck.length);
+    const strCard = deck.splice(r, 1)[0];
+
+    if (!strCard)
+    {
+        console.log ("");
+        console.log ("ERROROROREOJFIOCNjak");
+        console.log ("");
+    }
+    return strCard;
+}
+
+module.exports.GetCardsDeck = function (nCount, strRoomCode)
+{
+    let cards = [];
+    for (let i = 0; i < nCount; i++)
+    {
+        cards[i] = module.exports.GetCardDeck (strRoomCode);
+    }
+    return cards;
+}
+
+
+
+function CreateDeck () {
+    const newDeck = [];
+    ResetDeck (newDeck);
+    return newDeck;
+}
+
+function ResetDeck (deck) {
+    for (let i = 0; i < cards.length; i++)
+    {
+        deck[i] = cards[i];
+    }
 }

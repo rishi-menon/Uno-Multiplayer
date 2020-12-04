@@ -5,7 +5,7 @@
 */
 
 .cardCtnVer, .cardCtnHor {
-    --CardHoverTransitionSpeed: 0.3s;
+    --CardHoverTransitionSpeed: 0.15s;
 }
 
 .playerCtnHor {

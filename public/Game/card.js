@@ -58,7 +58,7 @@ function UC_AddCard(playerCtn, strCard) {
 
 //Internal function called within this js file... Takes in a card object that was just added by UC_AddCard
 function UCi_CardAddMetaData (eCard, strCard, bAddClickListenerToSelf) {
-    const nIndexDash = strCard.indexOf('-');
+    const nIndexDash = strCard.indexOf("-");
     if (nIndexDash == -1)   { console.log("Invalid str: " + strCard); return; }
     
     const strColor = strCard.slice(0, nIndexDash);

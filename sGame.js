@@ -279,7 +279,7 @@ function AddCardsToPlayer(socketId, nCardsCount, bUpdatePlayer)
     const {roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex} = GetGenericValuesFromSocket (socketId, "AddCardsToPlayer");
     if (nServerIndex == -1) { return; }
 
-    let newCards = cardGenerator.GetCards (nCardsCount);
+    let newCards = cardGenerator.GetCardsDeck (nCardsCount, strRoomCode);
     const player = mapValue.players[nServerIndex];
     for (let i = 0; i < nCardsCount; i++)
     {
@@ -312,7 +312,7 @@ function StartNextRound (socket) {
         let bIsValid = false;
         for (let nAttempts = 0; nAttempts < 25 && !bIsValid; nAttempts++)
         {
-            strStartingCard = cardGenerator.GetCard();
+            strStartingCard = cardGenerator.GetCard();  //This can be generated randomly instead of drawing a card from a deck
             const nIndex = strStartingCard.indexOf ("-");
             if (nIndex == -1) { continue; }
 
@@ -518,7 +518,7 @@ function UpdatePlayerNum (strRoomCode, nGenerateCards, bRandomizeOrder) {
         for (let i = 0; i < mapValue.count; i++) {
             let curPlayer = mapValue.players[i];
             if (curPlayer) { 
-                curPlayer.cards = cardGenerator.GetCards (nGenerateCards);
+                curPlayer.cards = cardGenerator.GetCardsDeck (nGenerateCards, strRoomCode);
             }
         }
     }
