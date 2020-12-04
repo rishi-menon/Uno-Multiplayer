@@ -360,19 +360,20 @@ function JoinRoom (socket, strRoomCode, strPlayerName) {
             return; 
         }
 
-        if (mapGameRunningValue.game.bRoundStarted === false)
-        {
-            //Ask the host of the current game if player can join
-            //hide the btn
-            socket.emit ("m_ShowJoinRoomEnterBtn", false);  
-            gameObj.AskPlayerJoinRunningGame (strRoomCode, strPlayerName, strSocketCacheId);
-
-        }
-        else
+        if (mapGameRunningValue.game.bRoundStarted === true)
         {
             socket.emit ("m_JoinRoomFail", "Cannot join room while game is ongoing");
-            return;  
+            return;
         }
+        if (mapGameRunningValue.count >= nMaxPlayersPerRoom)
+        {
+            socket.emit ("m_JoinRoomFail", "Room is full");
+            return;
+        }
+        //Ask the host of the current game if player can join
+        //hide the btn
+        socket.emit ("m_ShowJoinRoomEnterBtn", false);  
+        gameObj.AskPlayerJoinRunningGame (strRoomCode, strPlayerName, strSocketCacheId);
     }
 }
 

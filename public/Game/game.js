@@ -201,7 +201,7 @@ function UGi_GetPlayerFromName (strPlayerName)
 let ug_prevTurnPlayer = null;
 
 socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
-    
+
     //Reset the previous players color back to 0 as it isnt their turn anymore
     if (ug_prevTurnPlayer)
     {
@@ -229,23 +229,19 @@ socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
 
     UGi_WildShowColorChosen (ug_currCardMeta.strAdditionalCol); //Hide/show the chosen color
 
-    //To do: Add better visuals for the current players turn
     const yourTurnTextEle = document.querySelector (".player0 h1");
     if (ePlayerTurn === uc_playerSelf)
     {
         //Its your turn
         ug_nSelfTurn = 1;
         yourTurnTextEle.style.display = "flex";
-        // const eCurrentCard = document.querySelector (".currentCard");
     }
     else
     {
         //Its not your turn
         ug_nSelfTurn = 0;
         yourTurnTextEle.style.display = "none";
-        // const eCurrentCard = document.querySelector (".currentCard");
     }
-    // UC_HighlightCard (eCurrentCard, false); 
     
 });
 

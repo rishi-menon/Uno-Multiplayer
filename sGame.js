@@ -80,7 +80,7 @@ module.exports.AskPlayerJoinRunningGame = function (strRoomCode, strPlayerName, 
 module.exports.OnNewConnection = function (socket) {
     
     socket.on ('disconnect', () => {
-        Log (LogTrace, "Disconnected: " + socket.id)
+        Log (LogTrace, "Disconnected: " + socket.id);
         LeaveRoom (socket);
     });
 
@@ -366,6 +366,16 @@ function LeaveRoom (socket) {
     else
     {
         mapPlayers.game.strPlayerOrder =  RemovePlayerFromOrder (mapPlayers.game.strPlayerOrder, nServerIndex);
+        if (mapPlayers.game.bRoundStarted)
+        {
+            //Recalculate the current players turn
+            // const rand = Math.floor (Math.random() * mapPlayers.game.strPlayerOrder.length);
+            const nNextTurn = Number(mapPlayers.game.strPlayerOrder[0])
+            mapPlayers.game.nTurnIndex = nNextTurn;
+
+            io.in (strRoomCode).emit ("g_StartTurn", mapPlayers.players[nNextTurn].name, null);
+        }
+
         UpdatePlayerNum (strRoomCode, -1, false);  //Player couldve left while the game is ongoing... Preserve cards and preserve order
         UpdateScoreBoard (strRoomCode);     //Player couldve left while the scoreboard is displayed
     }
@@ -543,29 +553,6 @@ function GeneratePlayerOrder (nPlayerCount)
 
     return strOrder;
 }
-
-//This function preserves the current order... The missing numbers are added at the end
-// function GeneratePlayerOrderNonRandom (nPlayerCount, strPlayerOrder)
-// {
-//     let mapSeen = new Map();
-//     let strOrder = "";
-//     for (let i = 0; i < strPlayerOrder.length; i++) {
-//         let r = Number(strPlayerOrder[i]);
-//         if (r < nPlayerCount) {
-//             mapSeen.set (r, true);
-//             strOrder += strPlayerOrder[i];
-//         }
-//     }
-
-//     for (let i = 0; i < nPlayerCount; i++)
-//     {
-//         if (!mapSeen.has(i))
-//         {
-//             strOrder += i.toString();
-//         }
-//     }
-//     return strOrder;
-// }
 
 //Recalculates the strPlayerOrder in the event that a player leaves midgame... This preserves the order of the 
 function RemovePlayerFromOrder (strPlayerOrder, leftIndex)
