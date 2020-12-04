@@ -20,10 +20,23 @@ const ug_currCardMeta = {bCardThrown: false, nForceDraw: 0, nForceDrawValue: 0, 
 let ug_nSelfTurn = 0;
 let ug_strPlayerHasWon = "";
 
+let ug_strCacheId = "";
+let ug_bConnected = false;
+
 const nRoundsToWin = 4;
 const nMaxPlayers = 8;
 
+
+//Sometimes after redirecting, the socket does not connect for some reason... This is a hack... When that happens, forcefully refresh the page so that it connects
+setTimeout(() => {
+    if (!ug_bConnected)
+    {
+        window.location.reload(false);
+    }
+}, 600);
 socket.on("connect", () => {
+    ug_bConnected = true;
+    
     if (!ug_bPlayerDisconnected)
     {
         console.log("connected");
@@ -263,6 +276,75 @@ socket.on ("g_UpdateOtherPlayerCards", (strPlayerName, cardsData) => {
 socket.on ("g_SetPlayDirection", (bClockwise) => {
     UC_SetDirection (bClockwise);
 });
+
+socket.on ("g_PlayerTryingToJoinActiveGame", (strPlayerName, strCacheId) => {
+    console.log (`Player ${strPlayerName} is trying to join: CacheId: ${strCacheId}`);
+    const nPlayerJoinDlgHideTimeout = 30;
+
+    ug_strCacheId = strCacheId;
+
+    setTimeout (() => {
+        //Send a player cannot join message if one hasnt already been sent
+        if (ug_strCacheId)
+        {
+            ShowPlayerJoinDlg ("", 0);  //Hide the dlg
+            socket.emit ("g_AskPlayerJoinResponse", false, ug_strCacheId);
+            ug_strCacheId = "";
+        }
+    }, nPlayerJoinDlgHideTimeout * 1000);
+    ShowPlayerJoinDlg (strPlayerName, nPlayerJoinDlgHideTimeout);
+});
+
+//Player can join
+document.querySelector (".allowDlg_BtnAllow").addEventListener ("click", () => {
+    if (ug_strCacheId)
+    {
+        ShowPlayerJoinDlg ("", 0);  //Hide the dlg
+        socket.emit ("g_AskPlayerJoinResponse", true, ug_strCacheId);
+        ug_strCacheId = "";
+    } 
+});
+
+//Player can't join
+document.querySelector (".allowDlg_BtnDeny").addEventListener ("click", () => {
+    if (ug_strCacheId)
+    {
+        ShowPlayerJoinDlg ("", 0);  //Hide the dlg
+        socket.emit ("g_AskPlayerJoinResponse", false, ug_strCacheId);
+        ug_strCacheId = "";
+    }
+});
+
+//If player name is null then it hides the dlg... Timeout is optional to hide the dialog after a timeout
+function ShowPlayerJoinDlg (strPlayerName, nHideTimeoutSec)
+{
+    const ele = document.querySelector (".allowDlg");
+    if (!ele) { console.log("Error..."); return; }
+
+    if (!strPlayerName)
+    {
+        ele.style.display = "none";
+    }
+    else
+    {
+        ele.style.display = "flex";
+        const elePlayerName = ele.querySelector (".allowDlg_playerName");
+        if (!elePlayerName) { console.log("Error..."); return; }
+        elePlayerName.textContent = strPlayerName;
+
+        //Hide the dlg after a timeout... Optional
+        if (nHideTimeoutSec >= 0)
+        {
+            setTimeout (() => {
+                ele.style.display = "none";
+            }, nHideTimeoutSec * 1000);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 
 function UGi_DrawCard (nCardsToDraw)
 {

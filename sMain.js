@@ -12,9 +12,10 @@ io.sockets.on('connection', OnNewConnection)
 const gameCacheObj = require("./sGameCache.js");
 
 const mainMenuObj = require("./sMainMenu.js");
-mainMenuObj.Init(io, gameCacheObj);
 const gameObj = require("./sGame.js");
-gameObj.Init(io, gameCacheObj);
+
+mainMenuObj.Init(io, gameCacheObj, gameObj);
+gameObj.Init(io, gameCacheObj, mainMenuObj);
 
 
 function OnNewConnection(socket) {

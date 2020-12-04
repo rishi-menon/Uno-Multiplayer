@@ -1,6 +1,7 @@
 /////          Public data.. Gets set in Init
 let io;
 let gameCache;
+let mainMenuObj;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////                              Logging
@@ -36,7 +37,7 @@ function Log (level, strMessage) {
     }
 
     //To do: this is temporary to make debugging easier
-    if (level <= LogTrace)
+    if (level <= LogWarn)
     {
         console.log (strMessage);
     }
@@ -54,9 +55,26 @@ const nMaxRounds = 4;
 const cardGenerator = require ("./sCardGenerator.js");
 
 //Public API
-module.exports.Init = function(_io, _gameCacheObj) {
+module.exports.Init = function(_io, _gameCacheObj, _mainMenuObj) {
     io = _io;
     gameCache = _gameCacheObj
+    mainMenuObj = _mainMenuObj;
+}
+
+module.exports.GetGameRoom = function(strRoomCode)
+{
+    const val = mapRoomCodeToPlayers.get (strRoomCode);
+    if (val)    return val
+    else        return null;
+}
+
+module.exports.AskPlayerJoinRunningGame = function (strRoomCode, strPlayerName, strCacheId)
+{
+    const mapValue = mapRoomCodeToPlayers.get (strRoomCode);
+    if (!mapValue) { Log(LogWarn, "AskPlayerJoinRunningGame: room code dne in map"); return; }
+
+    const hostSocketId = mapValue.players[mapValue.hostIndex].socketId;
+    io.to(hostSocketId).emit ("g_PlayerTryingToJoinActiveGame", strPlayerName, strCacheId);
 }
 
 module.exports.OnNewConnection = function (socket) {
@@ -89,8 +107,16 @@ module.exports.OnNewConnection = function (socket) {
     socket.on ("g_DestroyRoom", (strErrorMessage) => {
         DestroyRoom (socket, strErrorMessage);
     });
+
+    socket.on ("g_AskPlayerJoinResponse", (bJoinStatus, strCacheId) => {
+        PlayerJoinRoomMidway (socket, bJoinStatus, strCacheId)
+    });
 }
 
+function PlayerJoinRoomMidway (socket, bJoinStatus, strCacheId)
+{
+    mainMenuObj.PlayerCanJoinRoomMidway (bJoinStatus, strCacheId);
+}
 
 function DestroyRoom (socket, strErrorMessage)
 {
@@ -383,6 +409,7 @@ function InitJoinRoom (socket, strCode) {
     }
     else
     {
+        
         //The room already exists
         if (mapValue.game.bRoundStarted)
         {
@@ -442,6 +469,7 @@ function UpdateScoreBoard(strRoomCode)
         io.in(strRoomCode).emit("g_UpdateScoreBoard", data, strRoomCode);
         io.in(strRoomCode).emit("g_UpdateScoreBoard_HideBtn");  //Hide the Next Round Btn
         
+        //To do: change 0 to 1 so that you need atleast two players to start the next round 
         if (data.count > 0 && mapValue.hasOwnProperty("hostIndex"))
         {
             //Only host can start the next round

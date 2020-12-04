@@ -20,6 +20,34 @@ module.exports.GetPlayerCache = function (strId) {
     else       return null;
 }
 
+module.exports.SetCache = function (obj, nTimeoutSec)
+{
+    const strId = GetUniqueString (nIdLength);
+    if (!strId) { return ""; }
+
+    mapCache.set (strId, obj);
+
+    if (nTimeoutSec >= 0)
+    {
+        setTimeout (() => {
+            module.exports.RemoveCache (strId);
+        }, nTimeoutSec * 1000);
+    }
+
+    return strId;
+}
+module.exports.GetCache = function (strId) {
+    const value = mapCache.get (strId);
+    if (value) return value;
+    else       return null;
+}
+module.exports.RemoveCache = function (strId)
+{
+    if (mapCache.has (strId))
+    {
+        mapCache.delete (strId);
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // nTimeout is in seconds

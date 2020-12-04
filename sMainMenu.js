@@ -2,6 +2,7 @@
 /////          Public data.. Gets set in Init
 let io;
 let gameCache;
+let gameObj;
 
 /////          Local Data
 //Map of room code to player objects
@@ -46,9 +47,30 @@ function Log (level, strMessage) {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 //Public API
-module.exports.Init = function(_io, _gameCache) {
+module.exports.Init = function(_io, _gameCache, _gameObj) {
     io=_io;
     gameCache = _gameCache;
+    gameObj = _gameObj;
+}
+
+module.exports.PlayerCanJoinRoomMidway = function (bJoinStatus, strCacheId)
+{
+    const cache = gameCache.GetCache (strCacheId);
+    if (!cache) { 
+        Log (LogError, "PlayerCanJoinRoomMidway: Cache obj does not exist");
+        io.to(cache.socketId).emit ("m_JoinRoomFail", "Server Error: Cache obj does not exist");
+        return;
+    } 
+
+    if (!bJoinStatus)
+    {
+        io.to(cache.socketId).emit ("m_JoinRoomFail", "Host did not accept");
+    }
+    else
+    {
+        const strId = gameCache.SetPlayerCache (cache.strRoomCode, cache.name, false);
+        io.to(cache.socketId).emit ("m_RedirectToGame", strId);
+    }
 }
 
 module.exports.OnNewConnection = function (socket) {
@@ -290,28 +312,65 @@ function JoinRoom (socket, strRoomCode, strPlayerName) {
     Log (LogTrace, "Client is trying to connect to room: " + strRoomCode);
     
     let mapValue = mapRoomCodeToPlayers.get (strRoomCode);
-    if (!mapValue)
+    let mapGameRunningValue = gameObj.GetGameRoom (strRoomCode);
+    
+    if (!mapValue && !mapGameRunningValue)
     {
         Log (LogTrace, "Room " + strRoomCode + " does not exist");
         socket.emit ("m_JoinRoomFail", "Room does not exist");
         return;
     }
 
-    if (mapValue.count >= nMaxPlayersPerRoom)
+    if (mapValue && mapValue.count >= nMaxPlayersPerRoom)
+    {
+        Log (LogTrace, "Room " + strRoomCode + " is full");
+        socket.emit ("m_JoinRoomFail", "Room is full");
+        return;
+    }
+    if (mapGameRunningValue && mapGameRunningValue.count >= nMaxPlayersPerRoom)
     {
         Log (LogTrace, "Room " + strRoomCode + " is full");
         socket.emit ("m_JoinRoomFail", "Room is full");
         return;
     }
 
-    mapValue.players[mapValue.count] = { name: strPlayerName, socketId: socket.id };
-    mapValue.count += 1;
-    mapSocketIdToRoomCode.set (socket.id, strRoomCode);
-    socket.join (strRoomCode);
+    if (mapValue)
+    {
+        //Normal room... Game hasnt started yet
+        mapValue.players[mapValue.count] = { name: strPlayerName, socketId: socket.id };
+        mapValue.count += 1;
+        mapSocketIdToRoomCode.set (socket.id, strRoomCode);
+        socket.join (strRoomCode);
 
-    socket.emit ("m_JoinRoomSucc", strRoomCode);
+        socket.emit ("m_JoinRoomSucc", strRoomCode);
 
-    UpdatePlayersInRoom (strRoomCode);
+        UpdatePlayersInRoom (strRoomCode);
+    }
+    else if (mapGameRunningValue)
+    {
+        //Game has already started... Send a message to the host asking if this player can join the room
+        //in seconds... If you change this value, then change the timeout value in the game.js as well.. The timeout for the dialog to disappear on its own
+        const nSocketCacheTimeout = 60; 
+        const cacheObj = {socketId: socket.id, name: strPlayerName, strRoomCode: strRoomCode };
+
+        const strSocketCacheId = gameCache.SetCache (cacheObj, nSocketCacheTimeout);
+        if (!strSocketCacheId)  { 
+            Log (LogWarn, "Error: Could not generate socket cacheId"); 
+            socket.emit ("m_JoinRoomFail", "Server Error: Could not generate socket cacheId");
+            return; 
+        }
+
+        if (mapGameRunningValue.game.bRoundStarted === false)
+        {
+            //Ask the host of the current game if player can join
+            gameObj.AskPlayerJoinRunningGame (strRoomCode, strPlayerName, strSocketCacheId);
+        }
+        else
+        {
+            socket.emit ("m_JoinRoomFail", "Cannot join room while game is ongoing");
+            return;  
+        }
+    }
 }
 
 
@@ -329,10 +388,15 @@ function GenerateRoomCode () {
             let randindex = Math.floor(Math.random() * 26);
             roomCode += strLetters[randindex];
         }
-        bIsTaken = mapRoomCodeToPlayers.has(roomCode);
+        if (mapRoomCodeToPlayers.has(roomCode)) continue;
         
+        //Check if the room code already exists and is running
+        if (gameObj.GetGameRoom (roomCode)) continue;
+
         //Reserved room code. This room code will never be generated. This is for testing purposes
-        if (roomCode == "xyzw") { bIsTaken = true; }
+        if (roomCode == "xyzw") continue;
+
+        bIsTaken = false;
     }
 
     if (bIsTaken)
