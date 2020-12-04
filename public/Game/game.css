@@ -175,6 +175,14 @@ section.middle {
     transition: 0.5s;
 }
 
+.middleMiddle h1 {
+    color: #efefef;
+    font-size: 80px;
+    font-family: 'Merienda', cursive;
+    display: none;
+    margin: 0rem 0.5rem; 
+}
+
 .playerCtnHor p, .playerCtnVer p {
     margin: 0.5rem 0.5rem;
 }

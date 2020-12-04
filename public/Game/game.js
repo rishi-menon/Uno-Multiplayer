@@ -229,6 +229,20 @@ socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
 
     UGi_WildShowColorChosen (ug_currCardMeta.strAdditionalCol); //Hide/show the chosen color
 
+    //Set the pick up card count
+    {
+        const ele = document.querySelector(".forceCardCount");
+        if (ug_currCardMeta.nForceDraw == 0)
+        {
+            ele.style.display = "none";
+        }
+        else
+        {
+            ele.style.display = "flex";
+            ele.textContent = "+" + ug_currCardMeta.nForceDrawValue.toString();
+        }
+    }
+
     const yourTurnTextEle = document.querySelector (".player0 h1");
     if (ePlayerTurn === uc_playerSelf)
     {
