@@ -167,7 +167,7 @@ function ShowErrorMessage (strMessage) {
         e_enterName_nameField.style.display = "none";
         e_enterName_codeField.style.display = "none";
         e_enterName_submitBtn.style.display = "none";
-
+        
         e_enterName_error.style.display = "flex";
         e_enterName_error.textContent=strMessage;
         e_enterName_dlgTitle.textContent = "Error Message"
@@ -225,7 +225,19 @@ socket.on ("m_JoinRoomSucc", (roomCode) => {
 });
 socket.on ("m_JoinRoomFail", (errorMsg) => {
     e_enterName_error.style.display = "flex";
-    e_enterName_error.innerHTML = "Error: " + errorMsg;
+    e_enterName_error.innerHTML = errorMsg;
+    e_enterName_submitBtn.style.display = "flex";
+});
+
+socket.on ("m_ShowJoinRoomEnterBtn", (bShow) => {
+    if (bShow)
+    {
+        e_enterName_submitBtn.style.display = "flex";
+    }
+    else
+    {
+        e_enterName_submitBtn.style.display = "none";
+    }
 });
 
 ////////////////////////////////////////////////////////////////////////////////////

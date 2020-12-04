@@ -363,7 +363,10 @@ function JoinRoom (socket, strRoomCode, strPlayerName) {
         if (mapGameRunningValue.game.bRoundStarted === false)
         {
             //Ask the host of the current game if player can join
+            //hide the btn
+            socket.emit ("m_ShowJoinRoomEnterBtn", false);  
             gameObj.AskPlayerJoinRunningGame (strRoomCode, strPlayerName, strSocketCacheId);
+
         }
         else
         {
