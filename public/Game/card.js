@@ -72,8 +72,20 @@ function UCi_CardAddMetaData (eCard, strCard, bAddClickListenerToSelf) {
     if (bAddClickListenerToSelf === true)
     {
         //Check if player clicked on their own card
-        const ePlayerCtn = eCard.parentNode.parentNode;    
-        const bIsSelfCard = (ePlayerCtn === uc_playerSelf);
+        let ePlayerCtn = eCard;
+        let bIsSelfCard = false;
+        for (let i = 0; i < 3; i++)
+        {
+            if (ePlayerCtn.parentNode)
+            {
+                ePlayerCtn = ePlayerCtn.parentNode; 
+                if (ePlayerCtn === uc_playerSelf)
+                {
+                    bIsSelfCard = true;
+                }
+            }
+        }
+        // const ePlayerCtn = eCard.parentNode.parentNode.parentNode;    
         if (bIsSelfCard)
         {
             eCard.addEventListener ("click", () => {
@@ -192,7 +204,7 @@ function UC_SetCurrentCard (strCard) {
     if (!eCard) { console.log ("Error"); return; }
 
     let strCardSrc = uc_strImagesDir + "bottom-" + strCard + uc_strImageExtension;
-    console.log (strCardSrc);
+    // console.log (strCardSrc);
     eCard.setAttribute ("src", strCardSrc);
     UCi_CardAddMetaData (eCard, strCard, false);
 }

@@ -158,6 +158,8 @@ const mapDeckCards = new Map();
 
 module.exports.GetCardDeck = function (strRoomCode)
 {
+    // if (Math.random() < 0.5) { return "red-draw2"; }
+
     let deck;
     if (!mapDeckCards.has (strRoomCode))
     {
@@ -175,16 +177,8 @@ module.exports.GetCardDeck = function (strRoomCode)
         ResetDeck (deck); 
     }
 
-    console.log ("Deck length: " + deck.length);
     const r = Math.floor(Math.random() * deck.length);
     const strCard = deck.splice(r, 1)[0];
-
-    if (!strCard)
-    {
-        console.log ("");
-        console.log ("ERROROROREOJFIOCNjak");
-        console.log ("");
-    }
     return strCard;
 }
 

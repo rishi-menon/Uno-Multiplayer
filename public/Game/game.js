@@ -14,10 +14,13 @@ let ug_strCurrentCardType;
 //strAdditionalCol gets set to the color chosen when a wild or draw 4 is thrown
 const ug_currCardMeta = {bCardThrown: false, nForceDraw: 0, nForceDrawValue: 0, strAdditionalCol: ""};
 
+//-1: invalid state ??
 //0: false, not your turn
 //1: it is your turn and you can throw a card
 //2: it is your turn but you already threw a black card and you havent chosen a color yet... You cannot throw another card nor draw a card from deck... 
+//3: player picked up a card from deck and has a valid card (so end turn button has showed up).. In this scenario player can throw a card but cannot draw another card
 let ug_nSelfTurn = 0;
+
 let ug_strPlayerHasWon = "";
 
 let ug_strCacheId = "";
@@ -262,6 +265,47 @@ socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
 socket.on ("g_UpdateSelfCardsCount", (data) => {
     uc_playerSelf.style.display = "flex";   //Probably not even required but safer to keep it
     UC_SetPlayerDetails (uc_playerSelf, data);
+
+    //If player has a valid card then show the end turn button
+    let bHasValid = false;
+    const nTotalLength = data.cards.length
+    let nStartIndex;
+    if (ug_currCardMeta.nForceDraw == 0)
+    {
+        nStartIndex = nTotalLength - 1;
+    }
+    else
+    {
+        nStartIndex = nTotalLength - ug_currCardMeta.nForceDrawValue;
+    }
+    // console.log (nStartIndex);
+    for (; nStartIndex < nTotalLength; nStartIndex++)
+    {
+        const strCard = data.cards[nStartIndex]; 
+        let cardObj = UC_ParseCard (strCard);
+        if (!cardObj) { continue; }
+
+        if (UGi_ThrowCardIsValid(cardObj.color, cardObj.type, ug_strCurrentCardColor, ug_strCurrentCardType))
+        {
+            bHasValid = true;
+            break;
+        }
+    }
+    // console.log ("IsValid: " + bHasValid);
+    if (bHasValid)
+    {
+        ug_nSelfTurn = 3;
+        UG_ShowEndTurnButton (true);
+    }
+    else
+    {
+        // ug_nSelfTurn = 0;    //It might be -1 over here ie invalid... But thats okay because we are ending turn so it will get set to 0
+        ug_currCardMeta.bCardThrown = false;
+        ug_currCardMeta.nForceDraw = 0;
+        ug_currCardMeta.nForceDrawValue = 0;
+        UGi_EndTurn ();
+    }
+
 });
 
 socket.on ("g_UpdateThrownCard", (strCurrentCard, cardMeta) => {
@@ -377,12 +421,10 @@ document.querySelector (".deckCard").addEventListener ("click", () => {
         UGi_DrawCard (1);
     }
     AC_StartDeckAnim ();
-    //To do: Add a feature where player can draw a card and has the option to throw it... In that case, server should emit g_UpdateSelfCardsCount (call a function with the right parameters) so that players card will update... Also dont call end turn immediateley... You also might have to add a end turn button so that the player isnt forced to throw a card if they dont want to 
-    ug_currCardMeta.bCardThrown = false;
-    ug_currCardMeta.nForceDraw = 0;
-    ug_currCardMeta.nForceDrawValue = 0;
     
-    UGi_EndTurn();
+    //Player now has to manually press end turn
+    // UGi_EndTurn(); 
+    ug_nSelfTurn = -1;  //invalidate.. This is to prevent the user from double clicking the deck card and ending up drawing two cards
 });
 
 //////////
@@ -520,12 +562,35 @@ function UG_UpdateCurrentCard (strCurrCard, cardMeta) {
     }
 }
 
+document.querySelector(".endTurnBtn").addEventListener ("click", () => {
+    //Clicked end turn button
+    ug_currCardMeta.bCardThrown = false;
+    ug_currCardMeta.nForceDraw = 0;
+    ug_currCardMeta.nForceDrawValue = 0;
+    console.log ("Ending turn");
+    UG_ShowEndTurnButton (false);
+    UGi_EndTurn ();
+});
+
+function UG_ShowEndTurnButton (bShow) {
+    const ele = document.querySelector(".endTurnBtn");
+    if (!ele) { console.log ("Error.."); return; }
+    
+    if (bShow === true)
+    {
+        ele.style.display = "flex";
+    }
+    else
+    {
+        ele.style.display = "none";
+    }
+}
 
 //public
 //function gets called when the player clicks on their OWN card
 function UG_CardOnClick(eCard) {
     if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot click on card"); return; }
-    if (ug_nSelfTurn !== 1) { return; }
+    if (!(ug_nSelfTurn === 1 || ug_nSelfTurn === 3)) { return; }
 
     const strColor = eCard.getAttribute ("cardColor");
     const strType = eCard.getAttribute ("cardType");
@@ -533,11 +598,11 @@ function UG_CardOnClick(eCard) {
 
     let bCanThrowCard = UGi_ThrowCardIsValid(strColor, strType, ug_strCurrentCardColor, ug_strCurrentCardType);
 
-    console.log (bCanThrowCard.toString());
-    
     if (bCanThrowCard)
     {
         let bEndTurn = true;
+
+        UG_ShowEndTurnButton (false);
 
         ug_strCurrentCardColor = strColor;
         ug_strCurrentCardType = strType;

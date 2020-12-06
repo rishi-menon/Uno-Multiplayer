@@ -7,6 +7,7 @@
 
 const socket = io();
 let bDisconnected = false;
+let bRedirecting = false;
 
 socket.on("connect", () => {
         console.log("connected");
@@ -21,7 +22,10 @@ socket.on("connect", () => {
 
 socket.on("disconnect", () => {
     bDisconnected = true;
-    ShowErrorMessage ("You have been disconnected. Please try again");
+    if (!bRedirecting)
+    {
+        ShowErrorMessage ("You have been disconnected. Please try again");
+    }
 })
 
 window.onload = function () {
@@ -300,6 +304,7 @@ e_roomDlgStartGameBtn.addEventListener ("click", () => {
 socket.on ("m_RedirectToGame", (strId) => {
     if (!strId) { console.log ("Error..."); return; }
     // console.log ("Redirecting: Id = " + strId);
+    bRedirecting = true;
     window.location = "/game.html?id=" + strId;
 });
 

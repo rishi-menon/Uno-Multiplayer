@@ -149,3 +149,25 @@
     left: 460px;
     /* transform: translateX(50%); */
 }
+
+
+.player0ExtraCtn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.endTurnBtn {
+    display: none;
+    padding: 0.9rem 1.5rem;
+    margin-left: 0.6rem;
+    border-radius: 5rem;
+    background: #00B453;
+    color: #efefef;
+    font-size: 20px;
+    cursor: default;
+}
+.endTurnBtn:hover {
+    background: #42DA88;
+
+}

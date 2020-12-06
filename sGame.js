@@ -483,8 +483,11 @@ function UpdateScoreBoard(strRoomCode)
         if (data.count > 0 && mapValue.hasOwnProperty("hostIndex"))
         {
             //Only host can start the next round
-            let playerSocketId = mapValue.players[mapValue.hostIndex].socketId;
-            io.to(playerSocketId).emit("g_UpdateScoreBoard_ShowBtn", nPlayerWonName);
+            const hostPlayer = mapValue.players[mapValue.hostIndex];
+            if (hostPlayer)
+            {
+                io.to(hostPlayer.socketId).emit("g_UpdateScoreBoard_ShowBtn", nPlayerWonName);
+            }
         }
     }
 
