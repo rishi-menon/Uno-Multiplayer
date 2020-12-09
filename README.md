@@ -1,10 +1,10 @@
 # Uno-Multiplayer  
 **About**  
 Multiplayer UNO game which can be played with friends during this wonderful quarantine. Upto eight people can play in a room  
-link: http://rishimenon.me  
-The server can alternatively be hosted locally using *node* and other players can connect to your local server using localTunnel module.  
+Link: http://rishimenon.me  
+The server can alternatively be hosted locally using **node** and other players can connect to your local server using **localTunnel** module.  
   
-Note: Currently recommended to host locally for serious usage. See known issues  
+Note: Currently it's recommended to host locally for serious usage. See known issues for more details.  
   
 
 **Screenshots**  
