@@ -7,8 +7,6 @@ let mainMenuObj;
 ///////////////                              Logging
 
 const fs = require ('fs');
-const { type } = require('os');
-const { createDeflate } = require('zlib');
 
 // 0:None
 // 1:Critical
