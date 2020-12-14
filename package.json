@@ -13,5 +13,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Rishi Menon",
-  "license": "MIT"
+  "license": "MIT",
+
+  "scripts": {
+    "start": "node sMain.js"
+  }
 }
