@@ -5,17 +5,14 @@
   "main": "sMain.js",
   "dependencies": {
     "express": "^4.17.1",
-    "localtunnel": "^2.0.0",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Rishi Menon",
   "license": "MIT",
 
   "scripts": {
-    "start": "node sMain.js"
+    "start": "node sMain.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

@@ -15,7 +15,7 @@ const nMaxPlayersPerRoom = 8;
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////                              Logging
 
-const fs = require ('fs');
+// const fs = require ('fs');
 
 // 0:None
 // 1:Critical
@@ -29,19 +29,19 @@ const LogWarn     = 3;
 const LogInfo     = 4;
 const LogTrace    = 5;
 
-const nLogLevel = LogWarn;
-const strLogfilePath = "./Log/mainMenu.log"
-fs.writeFileSync (strLogfilePath, "");  //This is to delete the previous contents of the log file
+// const nLogLevel = LogWarn;
+// const strLogfilePath = "./Log/mainMenu.log"
+// fs.writeFileSync (strLogfilePath, "");  //This is to delete the previous contents of the log file
 
-const logFile = fs.createWriteStream(strLogfilePath, {flags:'a'});  //flags is for append mode
+// const logFile = fs.createWriteStream(strLogfilePath, {flags:'a'});  //flags is for append mode
 
 
 function Log (level, strMessage) {
-    if (level <= nLogLevel) 
-    {
-        let str = level + ": " + strMessage + "\n";
-        logFile.write (str);
-    }
+    // if (level <= nLogLevel) 
+    // {
+    //     let str = level + ": " + strMessage + "\n";
+    //     logFile.write (str);
+    // }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

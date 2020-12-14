@@ -6,7 +6,7 @@ let mainMenuObj;
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////                              Logging
 
-const fs = require ('fs');
+// const fs = require ('fs');
 
 // 0:None
 // 1:Critical
@@ -20,25 +20,25 @@ const LogWarn     = 3;
 const LogInfo     = 4;
 const LogTrace    = 5;
 
-const nLogLevel = LogWarn;
-const strLogfilePath = "./Log/game.log"
-fs.writeFileSync (strLogfilePath, "");  //This is to delete the previous contents of the log file
+// const nLogLevel = LogWarn;
+// const strLogfilePath = "./Log/game.log"
+// fs.writeFileSync (strLogfilePath, "");  //This is to delete the previous contents of the log file
 
-const logFile = fs.createWriteStream(strLogfilePath, {flags:'a'});  //flags is for append mode
+// const logFile = fs.createWriteStream(strLogfilePath, {flags:'a'});  //flags is for append mode
 
 
 function Log (level, strMessage) {
-    if (level <= nLogLevel) 
-    {
-        let str = level + ": " + strMessage + "\n";
-        logFile.write (str);
-    }
+    // if (level <= nLogLevel) 
+    // {
+    //     let str = level + ": " + strMessage + "\n";
+    //     logFile.write (str);
+    // }
 
-    //To do: this is temporary to make debugging easier
-    if (level <= LogWarn)
-    {
-        console.log (strMessage);
-    }
+    // //To do: this is temporary to make debugging easier
+    // if (level <= LogWarn)
+    // {
+    //     console.log (strMessage);
+    // }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
