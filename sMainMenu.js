@@ -9,7 +9,7 @@ let gameObj;
 let mapRoomCodeToPlayers = new Map();
 let mapSocketIdToRoomCode = new Map();
 
-const nMaxRoomsAllowed = 2;
+const nMaxRoomsAllowed = 50;
 const nMaxPlayersPerRoom = 8;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
