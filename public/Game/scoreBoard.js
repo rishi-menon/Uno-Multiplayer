@@ -8,7 +8,7 @@ scoreDlg_CloseBtn.addEventListener ("click", () => {
     //You could send this message to disconnect... But simply changing the url and going to the home page will cause the socket to disconnect and hence it will leave the room
     
     socket.emit ("g_PlayerLeaveRoom");
-    window.location.pathname = "/index.html";
+    window.location = "/index.html";
 });
 
 // Next Round Btn
@@ -21,7 +21,7 @@ scoreDlg_NextRound.addEventListener ("click", () => {
     {
         //Quit the room
         socket.emit ("g_DestroyRoom", "Host has left the room");
-        window.location.pathname = "/index.html";
+        window.location = "/index.html";
     }
 });
 
