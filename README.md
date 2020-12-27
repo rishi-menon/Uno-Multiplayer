@@ -1,11 +1,8 @@
 # Uno-Multiplayer  
 **About**  
 Multiplayer UNO game which can be played with friends during this wonderful quarantine. Upto eight people can play in a room  
-Link: http://rishimenon.me  
+Link: https://games-uno.herokuapp.com/  
 The server can alternatively be hosted locally using **node** and other players can connect to your local server using **localTunnel** module.  
-  
-Note: Currently it's recommended to host locally for serious usage. See known issues for more details.  
-  
 
 **Screenshots**  
 <img src="Resources/img1.png" width=800>  
@@ -27,4 +24,3 @@ Open another terminal in the root repo and run `./createTunnel.sh 3000 jane` to 
   
 **Known Issues**  
 1. In a particular room, the players cannot have the same name. If they do, the game will not throw an error but when the actual round begins, the game will stop working  
-2. In the public URL (http://rishimenon.me), the player will randomly and fairly frequently get disconnected from the server. This does not happen when the server is run locally (players do get disconnected but this is much less frequently).
