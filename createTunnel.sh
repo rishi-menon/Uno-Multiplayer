@@ -33,7 +33,7 @@ if [ ${createTunnel} -eq 1 ]; then
     # echo "Path: ${node_path}"
     subdomainName=$2
     if [ -z ${subdomainName} ]; then
-        subdomainName="jane"
+        subdomainName="rishi"
     fi
     ${node_path} --port $1 --subdomain ${subdomainName}
 fi
