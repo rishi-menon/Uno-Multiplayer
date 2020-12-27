@@ -12,7 +12,7 @@
   "license": "MIT",
 
   "scripts": {
-    "start": "node sTemp.js",
+    "start": "node sMain.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
