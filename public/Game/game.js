@@ -36,7 +36,7 @@ setTimeout(() => {
     {
         window.location.reload(false);
     }
-}, 600);
+}, 1500);
 socket.on("connect", () => {
     ug_bConnected = true;
     
