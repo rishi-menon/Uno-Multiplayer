@@ -31,7 +31,7 @@ function OnNewConnection(socket) {
         gameObj.OnNewConnection (socket);
     }
     else{
-        console.log ("Unknown Url: " + strUrl);
+        console.log ("Unknown Url: " + strFullUrl);
     }
 }
 
