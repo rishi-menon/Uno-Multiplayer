@@ -1,13 +1,12 @@
-// const strDomain = 'http://localhost:3000';
-// const strDomain = 'https://rishi.loca.lt';
-// const strDomain = window.location.toString();
-
-//temp
-// console.log("Domain: " + strDomain);
-
 const socket = io();
 let bDisconnected = false;
 let bRedirecting = false;
+
+//Special case. If user accidentally goes to "//"" instead of "/" or "/index.html" then the index.html page loads normally and it connects to the server but the server does not parse and recognize the URL and so the player wouldn't be able to create a room... This is a hack to redirect the player to the correct URL if this happens
+if (window.location.pathname === "//")
+{
+    window.location = "/index.html";
+}
 
 socket.on("connect", () => {
         console.log("connected");
