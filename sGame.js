@@ -109,6 +109,28 @@ module.exports.OnNewConnection = function (socket) {
     socket.on ("g_AskPlayerJoinResponse", (bJoinStatus, strCacheId) => {
         PlayerJoinRoomMidway (socket, bJoinStatus, strCacheId)
     });
+
+    socket.on ("g_RotateClosedDeckAllPlayers", () => {
+        RotateClosedDeck(socket);
+    });
+
+    socket.on ("g_UpdateThrownCardAllPlayers", (strCurrentCard, cardMeta) => {
+        RotateOpenDeck(socket, strCurrentCard, cardMeta);
+    });
+}
+
+function RotateOpenDeck(socket, strCurrentCard, cardMeta) {
+    const {roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex} = GetGenericValuesFromSocket (socket.id, "RotateClosedDeck");
+    if (nServerIndex == -1) { Log(LogWarn, "Could not rotate deck for all players"); return; }
+
+    socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
+}
+
+function RotateClosedDeck(socket) {
+    const {roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex} = GetGenericValuesFromSocket (socket.id, "RotateClosedDeck");
+    if (nServerIndex == -1) { Log(LogWarn, "Could not rotate deck for all players"); return; }
+
+    socket.to(strRoomCode).emit ("g_RotateClosedDeck");
 }
 
 function PlayerJoinRoomMidway (socket, bJoinStatus, strCacheId)
@@ -216,7 +238,8 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
         return;
     }
 
-    socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
+    //There now exists a seperate signal which the player sends when they throw a card.. The open deck card rotates when that signal is received.. A seperate signal was added so that when the feature is added to keep throwing the same number, the other players can see all the cards that were thrown
+    // socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
     
     //Update the current card for the other players
     if (cardMeta.bCardThrown === true)

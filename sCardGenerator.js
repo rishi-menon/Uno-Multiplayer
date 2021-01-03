@@ -110,6 +110,8 @@ const cards = [
     "black-draw4",
     "black-draw4",
     "black-draw4",
+    "black-draw4",
+    "black-wild",
     "black-wild",
     "black-wild",
     "black-wild",

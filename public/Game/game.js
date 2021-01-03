@@ -316,7 +316,8 @@ socket.on ("g_UpdateThrownCard", (strCurrentCard, cardMeta) => {
     }
     else
     {
-        AC_StartDeckAnim ()
+        //Now there is a seperate signal(g_RotateClosedDeck) that gets received to rotate the deck when another player clicks on it
+        // AC_StartDeckAnim ()
     }
 });
 
@@ -406,6 +407,12 @@ function UGi_DrawCard (nCardsToDraw)
     socket.emit ("g_DrawCardsSelf", nCardsToDraw);
 }
 
+//Some player drew a card
+socket.on ("g_RotateClosedDeck", () => {
+    console.log ("Rishi control1");
+    AC_StartDeckAnim ();
+})
+
 //Draw a card
 document.querySelector (".deckCard").addEventListener ("click", () => {
     if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot draw card"); return; }
@@ -421,6 +428,7 @@ document.querySelector (".deckCard").addEventListener ("click", () => {
         UGi_DrawCard (1);
     }
     AC_StartDeckAnim ();
+    socket.emit ("g_RotateClosedDeckAllPlayers");
     
     //Player now has to manually press end turn
     // UGi_EndTurn(); 
@@ -688,7 +696,8 @@ function UGi_EndTurn ()
 
     //Visual Stuff
     uc_playerSelf.querySelector ("p").style.color = "#efefef";
-
+    
     const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;    
+    socket.emit ("g_UpdateThrownCardAllPlayers", strCard, ug_currCardMeta);
     socket.emit ("g_PlayerEndTurn", strCard, ug_currCardMeta);
 }
