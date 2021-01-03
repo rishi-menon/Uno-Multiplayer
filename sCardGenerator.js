@@ -160,8 +160,6 @@ const mapDeckCards = new Map();
 
 module.exports.GetCardDeck = function (strRoomCode)
 {
-    // if (Math.random() < 0.5) { return "red-draw2"; }
-
     let deck;
     if (!mapDeckCards.has (strRoomCode))
     {

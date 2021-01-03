@@ -758,4 +758,6 @@ function UGi_EndTurn ()
 
     const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;    
     socket.emit ("g_PlayerEndTurn", strCard, ug_currCardMeta);
+
+    ug_currCardMeta.nCardThrown = 0;
 }
