@@ -117,13 +117,43 @@ module.exports.OnNewConnection = function (socket) {
     socket.on ("g_UpdateThrownCardAllPlayers", (strCurrentCard, cardMeta) => {
         RotateOpenDeck(socket, strCurrentCard, cardMeta);
     });
+
+    socket.on ("g_RemoveCardFromMyDeck", (strCard) => {
+        RemoveCardFromPlayerDeck (socket.id, strCard);
+    })
 }
 
+function RemoveCardFromPlayerDeck (socketId, strCard)
+{
+    const {roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex} = GetGenericValuesFromSocket (socketId, "RemoveCardFromPlayerDeck");
+    if (nServerIndex == -1) { Log(LogWarn, "Could not rotate deck for all players"); return; }
+
+    h_RemoveCardFromPlayer (mapValue.players[nServerIndex], strCard);
+}
 function RotateOpenDeck(socket, strCurrentCard, cardMeta) {
     const {roomCode: strRoomCode, mapValue: mapValue, index: nServerIndex} = GetGenericValuesFromSocket (socket.id, "RotateClosedDeck");
     if (nServerIndex == -1) { Log(LogWarn, "Could not rotate deck for all players"); return; }
 
     socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
+
+    //Technically this should definately be true
+    if (cardMeta.nCardThrown !== 0)
+    {
+        //reverse the direction
+        const nIndex = strCurrentCard.indexOf ("-");
+        if (nIndex == -1) { Log(LogWarn, "RotateOpenDeck: Invalide strCurrentCard: " + strCurrentCard); return; }
+        // const strCardCol  = strCurrentCard.slice (0, nIndex);
+        const strCardType = strCurrentCard.slice (nIndex+1, strCurrentCard.length);
+        if (strCardType == "reverse")
+        {
+            mapValue.game.bClockwise = !mapValue.game.bClockwise;
+            io.in (strRoomCode).emit ("g_SetPlayDirection", mapValue.game.bClockwise);
+        }
+    }
+    else
+    {
+        Log (LogError, "RotateOpenDeck: meta data value might not be correct");
+    }
 }
 
 function RotateClosedDeck(socket) {
@@ -155,7 +185,7 @@ function DestroyRoom (socket, strErrorMessage)
 
 
 //Helper function which is probably going to be used only once
-function h_CalculateNextPlayerTurn (mapValue, strCardColor, strCardType, bCardThrown)
+function h_CalculateNextPlayerTurn (mapValue, strCardColor, strCardType, nCardThrown)
 {
     //calculate index of current player in the order
     const nStringIndexCur = mapValue.game.strPlayerOrder.indexOf (mapValue.game.nTurnIndex);
@@ -165,9 +195,9 @@ function h_CalculateNextPlayerTurn (mapValue, strCardColor, strCardType, bCardTh
     let nStringIndexNew = nStringIndexCur;
     nStringIndexNew += (mapValue.game.bClockwise) ? 1 : -1;
 
-    if (bCardThrown === true && strCardType == "skip")
+    if (nCardThrown !== 0 && strCardType == "skip")
     {
-        nStringIndexNew += (mapValue.game.bClockwise) ? 1 : -1;
+        nStringIndexNew += ((mapValue.game.bClockwise) ? 1 : -1) * nCardThrown;
     }
 
     //Check if it went out of bounds
@@ -214,7 +244,7 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     if (nServerIndex == -1) { return; }
 
     //validate the cardMeta
-    if (!cardMeta.hasOwnProperty ("bCardThrown")) { Log (LogCritical, "Invalid meta data received from client"); return; }
+    if (!cardMeta.hasOwnProperty ("nCardThrown")) { Log (LogCritical, "Invalid meta data received from client"); return; }
 
     //validate strCurrentCard
     const nIndex = strCurrentCard.indexOf ("-");
@@ -242,19 +272,18 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     // socket.to(strRoomCode).emit("g_UpdateThrownCard", strCurrentCard, cardMeta);
     
     //Update the current card for the other players
-    if (cardMeta.bCardThrown === true)
-    {
-        //reverse the direction before calculating who the next player is (Reverse only if that card was thrown)
-        if (strCardType == "reverse")
-        {
-            mapValue.game.bClockwise = !mapValue.game.bClockwise;
-            io.in (strRoomCode).emit ("g_SetPlayDirection", mapValue.game.bClockwise);
-        }
+    // if (cardMeta.nCardThrown !== 0)
+    // {
+    //     //reverse the direction before calculating who the next player is (Reverse only if that card was thrown and if there are an odd number of reverses that were thrown)
+    //     if (strCardType == "reverse" && (cardMeta.nCardThrown % 2 == 1))
+    //     {
+    //         mapValue.game.bClockwise = !mapValue.game.bClockwise;
+    //         io.in (strRoomCode).emit ("g_SetPlayDirection", mapValue.game.bClockwise);
+    //     }
 
-        //The current player either picked up a card or discarded a card... If they picked up a card then the cards array is already up to date (because they need to request the server to draw a card)
-        //If they threw a card then we need to update the cards array
-        h_RemoveCardFromPlayer (mapValue.players[nServerIndex], strCurrentCard);
-    }
+    //     //There is now a seperate signal to update the players deck when the player throws a card (g_RemoveCardFromMyDeck)... 
+    //     // h_RemoveCardFromPlayer (mapValue.players[nServerIndex], strCurrentCard);
+    // }
 
     //Update all the other players now that the current player has picked a card/thrown a card.. Must be done after h_RemoveCardFromPlayer()
     const playerData = mapValue.players[nServerIndex];
@@ -279,7 +308,7 @@ function PlayerEndedTurn (socket, strCurrentCard, cardMeta)
     }
         
     
-    const nNextPlayerIndex = h_CalculateNextPlayerTurn (mapValue, strCardCol, strCardType, cardMeta.bCardThrown);
+    const nNextPlayerIndex = h_CalculateNextPlayerTurn (mapValue, strCardCol, strCardType, cardMeta.nCardThrown);
     mapValue.game.nTurnIndex = nNextPlayerIndex;    //mapValue.game.nTurnIndex is kinda redundant at the moment as we could use nClientIndex to figure out whos turn it currently is...
 
     //Start the next players turn

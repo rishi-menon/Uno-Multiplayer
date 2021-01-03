@@ -12,17 +12,15 @@ let ug_strCurrentCardType;
 //Note: If you change the name then you would have to change it in server file as well
 //nForceDraw gets set to 1 when its a draw2 and gets set to 2 when its a draw4... The value will be the number of cards to pick up which allows people to chain draw2 together
 //strAdditionalCol gets set to the color chosen when a wild or draw 4 is thrown
-const ug_currCardMeta = {bCardThrown: false, nForceDraw: 0, nForceDrawValue: 0, strAdditionalCol: ""};
+const ug_currCardMeta = {nCardThrown: false, nForceDraw: 0, nForceDrawValue: 0, strAdditionalCol: ""};
 
-//-1: invalid state ??
-//0: false, not your turn
-//1: it is your turn and you can throw a card
-//2: it is your turn but you already threw a black card and you havent chosen a color yet... You cannot throw another card nor draw a card from deck... 
-//3: player picked up a card from deck and has a valid card (so end turn button has showed up).. In this scenario player can throw a card but cannot draw another card
-let ug_nSelfTurn = 0;
+//this can be used to check when its your turn.. This is the master flag.. If this is false then you cannot do anything (master flag)
+let ug_bIsYourTurn = false; 
+let ug_bCanDrawCard = false;
+let ug_bCanThrowAnyCard = false;
+let ug_bCanThrowSameNumber = false;
 
 let ug_strPlayerHasWon = "";
-
 let ug_strCacheId = "";
 let ug_bConnected = false;
 
@@ -90,7 +88,7 @@ function UGi_InitJoinRoomFailed (strMessage) {
 }
 
 socket.on ("g_DisplayErrorMessage", (strError) => {
-    ug_nSelfTurn = 0;   //Not required but just in case
+    ug_bIsYourTurn = false;   //Not required but just in case
     UGi_DisplayError (strError);
 })
 
@@ -250,13 +248,19 @@ socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
     if (ePlayerTurn === uc_playerSelf)
     {
         //Its your turn
-        ug_nSelfTurn = 1;
+        ug_bIsYourTurn = true;
+        ug_bCanDrawCard = true;
+
+        //If a draw2 or draw4 was thrown then you cannot throw any card, you can only throw a card of the same number to stack it
+        ug_bCanThrowAnyCard = (metaData ? (metaData.nForceDraw === 0) : true);
+        ug_bCanThrowSameNumber = true;
+
         yourTurnTextEle.style.display = "flex";
     }
     else
     {
         //Its not your turn
-        ug_nSelfTurn = 0;
+        ug_bIsYourTurn = false;
         yourTurnTextEle.style.display = "none";
     }
     
@@ -294,15 +298,17 @@ socket.on ("g_UpdateSelfCardsCount", (data) => {
     // console.log ("IsValid: " + bHasValid);
     if (bHasValid)
     {
-        ug_nSelfTurn = 3;
+        ug_bIsYourTurn = true;   //This should already be true and should continue being true so no need to set it 
+        ug_bCanDrawCard = false;
+        ug_bCanThrowAnyCard = true;
+        ug_bCanThrowSameNumber = true;
+
         UG_ShowEndTurnButton (true);
     }
     else
     {
-        // ug_nSelfTurn = 0;    //It might be -1 over here ie invalid... But thats okay because we are ending turn so it will get set to 0
-        ug_currCardMeta.bCardThrown = false;
-        ug_currCardMeta.nForceDraw = 0;
-        ug_currCardMeta.nForceDrawValue = 0;
+        //Players turn is about to end... When we call UGi_EndTurn, the boolean turn flag will get set to false
+        ug_currCardMeta.nCardThrown = 0;
         UGi_EndTurn ();
     }
 
@@ -310,14 +316,16 @@ socket.on ("g_UpdateSelfCardsCount", (data) => {
 
 socket.on ("g_UpdateThrownCard", (strCurrentCard, cardMeta) => {
     console.log ("Update thrown card");
-    if (cardMeta.bCardThrown === true)
+    if (cardMeta.nCardThrown !== 0)
     {
         UG_UpdateCurrentCard (strCurrentCard, cardMeta);
     }
     else
     {
-        //Now there is a seperate signal(g_RotateClosedDeck) that gets received to rotate the deck when another player clicks on it
-        // AC_StartDeckAnim ()
+        console.log ("Error... Card thrown signal was received but meta data is incorrect");
+        //Temporary call this so it actually updates... Ideally this is an error case and should never show up
+        cardMeta.nCardThrown = 1;   //Correct the nCardThrown.. Technically it can be any number but we dont know what it should be so set it to 1
+        UG_UpdateCurrentCard (strCurrentCard, cardMeta);
     }
 });
 
@@ -416,7 +424,7 @@ socket.on ("g_RotateClosedDeck", () => {
 //Draw a card
 document.querySelector (".deckCard").addEventListener ("click", () => {
     if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot draw card"); return; }
-    if (ug_nSelfTurn !== 1) { return; }
+    if (!ug_bCanDrawCard) { return; }
 
     if (ug_currCardMeta.nForceDraw != 0)
     {
@@ -432,7 +440,9 @@ document.querySelector (".deckCard").addEventListener ("click", () => {
     
     //Player now has to manually press end turn
     // UGi_EndTurn(); 
-    ug_nSelfTurn = -1;  //invalidate.. This is to prevent the user from double clicking the deck card and ending up drawing two cards
+    ug_bCanDrawCard = false;  //invalidate.. This is to prevent the user from double clicking the deck card and ending up drawing two cards
+
+    ug_currCardMeta.nCardThrown = 0;
 });
 
 //////////
@@ -483,6 +493,11 @@ document.querySelectorAll (".wildChooseColor .block").forEach ((block) => {
         ug_currCardMeta.strAdditionalCol = block.getAttribute ("blockCol");
         console.log (ug_currCardMeta.strAdditionalCol);
         UGi_WildShowColorPicker (false);    //Hide the color picker
+
+        //Update the other players that I threw a card
+        const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;    
+        socket.emit ("g_UpdateThrownCardAllPlayers", strCard, ug_currCardMeta);
+
         UGi_EndTurn();
     });
 });
@@ -570,13 +585,10 @@ function UG_UpdateCurrentCard (strCurrCard, cardMeta) {
     }
 }
 
+//Clicked end turn button
 document.querySelector(".endTurnBtn").addEventListener ("click", () => {
-    //Clicked end turn button
-    ug_currCardMeta.bCardThrown = false;
-    ug_currCardMeta.nForceDraw = 0;
-    ug_currCardMeta.nForceDrawValue = 0;
     console.log ("Ending turn");
-    UG_ShowEndTurnButton (false);
+    // UG_ShowEndTurnButton (false); //This gets called by UGi_EndTurn
     UGi_EndTurn ();
 });
 
@@ -598,92 +610,131 @@ function UG_ShowEndTurnButton (bShow) {
 //function gets called when the player clicks on their OWN card
 function UG_CardOnClick(eCard) {
     if (ug_bPlayerDisconnected) { console.log("Player disconnected... Cannot click on card"); return; }
-    if (!(ug_nSelfTurn === 1 || ug_nSelfTurn === 3)) { return; }
+    
+    if (!ug_bIsYourTurn) { return; } //Not your turn
+    if (!(ug_bCanThrowAnyCard || ug_bCanThrowSameNumber)) { return; } //Player cannot throw a card
 
     const strColor = eCard.getAttribute ("cardColor");
     const strType = eCard.getAttribute ("cardType");
     if (!strColor || !strType) { console.log ("Error..."); return; }
 
-    let bCanThrowCard = UGi_ThrowCardIsValid(strColor, strType, ug_strCurrentCardColor, ug_strCurrentCardType);
-
-    if (bCanThrowCard)
+    if (!UGi_ThrowCardIsValid(strColor, strType, ug_strCurrentCardColor, ug_strCurrentCardType)) { return; } 
+    
+    //valid card was clicked
+    ug_strCurrentCardColor = strColor;
+    ug_strCurrentCardType = strType;
+    
+    //Set meta data
+    ug_currCardMeta.nCardThrown += 1;
+    if (strType === "draw2")
     {
-        let bEndTurn = true;
-
-        UG_ShowEndTurnButton (false);
-
-        ug_strCurrentCardColor = strColor;
-        ug_strCurrentCardType = strType;
-        
-        //Set meta data
-        ug_currCardMeta.bCardThrown = true;
-        if (strType === "draw2")
-        {
-            ug_currCardMeta.nForceDraw = 1;
-            ug_currCardMeta.nForceDrawValue += 2;
-        }
-        else if (strType === "draw4")
-        {
-            ug_currCardMeta.nForceDraw = 2;
-            ug_currCardMeta.nForceDrawValue += 4;
-        }
-        else
-        {
-            ug_currCardMeta.nForceDraw = 0;
-            ug_currCardMeta.nForceDrawValue = 0;
-        }
-
-        if (strColor === "black")
-        {
-            bEndTurn = false;
-            //Bring up the color picker
-            UGi_WildShowColorPicker (true);
-            ug_nSelfTurn = 2;   //If player throws a black card, they can no longer throw other cards, because they have to choose a color... Their turn isnt yet over tho so set it to 2 instead of 0
-        }
-        else
-        {
-            //Player threw a non color change card... When the server send the StartNextTurn signal, the clients will all end up hiding the current color
-            ug_currCardMeta.strAdditionalCol = "";  
-        }
-
-        UGi_WildShowColorChosen ("");   //Remove the wild color if its being shown currently
-        //This will get set by the animation
-        AC_SetCurrentCardAnim (strColor + "-" + strType);    
-        UC_RemoveCard (eCard);
-
-        if (bEndTurn)
-            UGi_EndTurn ();
+        ug_currCardMeta.nForceDraw = 1;
+        ug_currCardMeta.nForceDrawValue += 2;
+    }
+    else if (strType === "draw4")
+    {
+        ug_currCardMeta.nForceDraw = 2;
+        ug_currCardMeta.nForceDrawValue += 4;
+    }
+    else
+    {
+        ug_currCardMeta.nForceDraw = 0;
+        ug_currCardMeta.nForceDrawValue = 0;
     }
 
+    ug_bCanThrowAnyCard = false;
+    ug_bCanDrawCard = false;
+    if (strColor === "black")
+    {
+        UG_ShowEndTurnButton (false);
+        //Bring up the color picker
+        UGi_WildShowColorPicker (true);
+        ug_bCanThrowSameNumber = false; //If you threw a black card then your turn is over, you cannot throw multiple black cards
+    }
+    else
+    {
+        //Player threw a non color change card... When the server send the StartNextTurn signal, the clients will all end up hiding the current color
+        ug_currCardMeta.strAdditionalCol = "";  
+
+        //I didnt throw a wild card so update the other players that I threw a card... If I threw a wild card, then update the other players AFTER I select a color...
+        const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;    
+        socket.emit ("g_UpdateThrownCardAllPlayers", strCard, ug_currCardMeta);
+    }
+
+    UGi_WildShowColorChosen ("");   //Remove the wild color if its being shown currently
+    //This will get set by the animation
+    AC_SetCurrentCardAnim (strColor + "-" + strType);    
+    UC_RemoveCard (eCard);
+    socket.emit ("g_RemoveCardFromMyDeck", strColor + "-" + strType)
+
+    //if ug_bCanThrowSameNumber is false then I threw a black card and hence my turn will get over as soon as I choose a color... Dont call end_turn as it will be called once I choose a color...
+    if (ug_bCanThrowSameNumber)
+    {
+        let bHasValidNumber = false;
+        const cards = UGi_GetSelfCardsFromHtml();
+        console.log (cards);
+        for (let i = 0; i < cards.length && !bHasValidNumber; i++)
+        {
+            const curCard = cards[i];
+            bHasValidNumber = UGi_ThrowCardIsValid(curCard.strColor, curCard.strType, ug_strCurrentCardColor, ug_strCurrentCardType)
+        }
+
+        if (bHasValidNumber)
+            UG_ShowEndTurnButton (true);
+        else    
+            UGi_EndTurn ();
+    }
+}
+
+function UGi_GetSelfCardsFromHtml () {
+    let cardsArray = [];
+
+    const cardCtnDiv = uc_playerSelf.querySelectorAll (".cardCtnHor img");
+    for (let i = 0; i < cardCtnDiv.length; i++)
+    {
+        const eCard = cardCtnDiv[i];
+        const strColor = eCard.getAttribute ("cardColor");
+        const strType = eCard.getAttribute ("cardType");
+        if (!strColor || !strType) { console.log ("Major Error..."); return []; }
+        
+        cardsArray[i] = {strColor: strColor, strType: strType};
+    }
+    return cardsArray;
 }
 
 function UGi_ThrowCardIsValid (strCardCol, strCardType, strCurrentCol, strCurrentType)
 {
-    let bCanThrowCard = false;
-    //Same col or same number
-    if (strCardCol ===  strCurrentCol ||
-        strCardType ===  strCurrentType  ||
-        strCardCol === "black") { bCanThrowCard = true; }
-
-    //To Do: Add an additional check for wild cards
-    if (ug_currCardMeta.strAdditionalCol !== "" && ug_currCardMeta.strAdditionalCol === strCardCol)
+    if (ug_bCanThrowAnyCard)
     {
-        bCanThrowCard = true;
-    }
+        //Check for force draw2 and draw4
+        if (ug_currCardMeta.nForceDraw !== 0)
+        {
+            //You can only throw a draw2/draw4 in this case.. 
+            return (strCardType === strCurrentType);
+        }
 
-    //Check for force draw2(1) and draw4(2)
-    if (ug_currCardMeta.nForceDraw == 1)
-    {
-        //You can only throw a draw2 in this case
-        bCanThrowCard = (strCardType == "draw2");
-    }
-    else if (ug_currCardMeta.nForceDraw == 2)
-    {
-        //You can only throw a draw4 in this case
-        bCanThrowCard = (strCardType == "draw4");
-    }
+        let bCanThrowCard = false;
+        //Same col or same number or if its a wild card then it can be played of if its a color chosen by the wild card then it can be played
+        if (strCardCol ===  strCurrentCol ||
+            strCardType ===  strCurrentType  ||
+            strCardCol === "black" ||
+            (ug_currCardMeta.strAdditionalCol !== "" && ug_currCardMeta.strAdditionalCol === strCardCol)) 
+            { 
+                bCanThrowCard = true; 
+            }
 
-    return bCanThrowCard;
+        return bCanThrowCard;
+    }
+    else if (ug_bCanThrowSameNumber)
+    {
+        //This happens when player has already thrown once.. In this case they can only throw the same number and no other card
+        return strCardType ===  strCurrentType; 
+    }
+    else
+    {
+        //No card can be thrown if the flags aren't set
+        return false;
+    }
 }
 
 ///////////
@@ -691,13 +742,20 @@ function UGi_ThrowCardIsValid (strCardCol, strCardType, strCurrentCol, strCurren
 
 function UGi_EndTurn ()
 {
-    if (ug_nSelfTurn === 0) { console.log ("Error..."); return; }
-    ug_nSelfTurn = 0;
+    if (!ug_bIsYourTurn) { console.log ("Minor Error..."); return; }
+    ug_bIsYourTurn = false;
+    UG_ShowEndTurnButton (false);
+
+    if (ug_currCardMeta.nCardThrown === 0)
+    {
+        //No card was thrown... Reset some meta data because draw2 or draw4 was not thrown
+        ug_currCardMeta.nForceDraw = 0;
+        ug_currCardMeta.nForceDrawValue = 0;
+    }
 
     //Visual Stuff
     uc_playerSelf.querySelector ("p").style.color = "#efefef";
-    
+
     const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;    
-    socket.emit ("g_UpdateThrownCardAllPlayers", strCard, ug_currCardMeta);
     socket.emit ("g_PlayerEndTurn", strCard, ug_currCardMeta);
 }
