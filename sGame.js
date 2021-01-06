@@ -20,7 +20,7 @@ const LogWarn     = 3;
 const LogInfo     = 4;
 const LogTrace    = 5;
 
-// const nLogLevel = LogWarn;
+const nLogLevel = LogWarn;
 // const strLogfilePath = "./Log/game.log"
 // fs.writeFileSync (strLogfilePath, "");  //This is to delete the previous contents of the log file
 
@@ -34,11 +34,10 @@ function Log (level, strMessage) {
     //     logFile.write (str);
     // }
 
-    // //To do: this is temporary to make debugging easier
-    // if (level <= LogWarn)
-    // {
-    //     console.log (strMessage);
-    // }
+    if (level <= nLogLevel)
+    {
+        console.log (strMessage);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

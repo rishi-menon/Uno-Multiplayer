@@ -29,7 +29,7 @@ const LogWarn     = 3;
 const LogInfo     = 4;
 const LogTrace    = 5;
 
-// const nLogLevel = LogWarn;
+const nLogLevel = LogWarn;
 // const strLogfilePath = "./Log/mainMenu.log"
 // fs.writeFileSync (strLogfilePath, "");  //This is to delete the previous contents of the log file
 
@@ -42,6 +42,10 @@ function Log (level, strMessage) {
     //     let str = level + ": " + strMessage + "\n";
     //     logFile.write (str);
     // }
+    if (level <= nLogLevel)
+    {
+        console.log (strMessage);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

@@ -131,7 +131,7 @@ socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
         curEle.style.display = "flex";
         
         let nServerIndex = Number(strPlayerOrderRearrange[i]);
-        UC_SetPlayerDetails (curEle, data.players[nServerIndex]);
+        UC_SetPlayerDetails (curEle, data.players[nServerIndex], nRoundsToWin);
     }
 
     const nEmptyData = {name: "", winCount: 0};
@@ -142,7 +142,7 @@ socket.on ("g_UpdatePlayerNum", (strPlayerOrder, nServerIndex, data) => {
 
         const curEle = uc_players[i];
         curEle.style.display = "none";
-        UC_SetPlayerDetails (curEle, nEmptyData);
+        UC_SetPlayerDetails (curEle, nEmptyData, nRoundsToWin);
     }
 });
 
@@ -199,19 +199,20 @@ function UGi_GetPlayerFromName (strPlayerName)
     }
     return null;
 }
-let ug_prevTurnPlayer = null;
 
+let ug_prevTurnPlayer = null;
 socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
 
-    //Reset the previous players color back to 0 as it isnt their turn anymore
+    //Visual stuff
+    //Reset the previous players highlight
     if (ug_prevTurnPlayer)
     {
-        ug_prevTurnPlayer.querySelector("p").style.backgroundColor = "transparent";
+        UC_HighlightPlayerCtn (ug_prevTurnPlayer, false);
     }
     
-    let ePlayerTurn = UGi_GetPlayerFromName (strPlayerTurn);
-    //Set background color for the current player
-    ePlayerTurn.querySelector ("p").style.backgroundColor = "#00aa00";
+    const ePlayerTurn = UGi_GetPlayerFromName (strPlayerTurn);
+    //Set highlight color for the current player
+    UC_HighlightPlayerCtn (ePlayerTurn, true);
     ug_prevTurnPlayer = ePlayerTurn;
 
     if (metaData)
@@ -267,8 +268,7 @@ socket.on ("g_StartTurn", (strPlayerTurn, metaData) => {
 });
 
 socket.on ("g_UpdateSelfCardsCount", (data) => {
-    uc_playerSelf.style.display = "flex";   //Probably not even required but safer to keep it
-    UC_SetPlayerDetails (uc_playerSelf, data);
+    UC_SetPlayerDetails (uc_playerSelf, data, nRoundsToWin);
 
     //If player has a valid card then show the end turn button
     let bHasValid = false;
@@ -752,9 +752,6 @@ function UGi_EndTurn ()
         ug_currCardMeta.nForceDraw = 0;
         ug_currCardMeta.nForceDrawValue = 0;
     }
-
-    //Visual Stuff
-    uc_playerSelf.querySelector ("p").style.color = "#efefef";
 
     const strCard = ug_strCurrentCardColor + "-" + ug_strCurrentCardType;    
     socket.emit ("g_PlayerEndTurn", strCard, ug_currCardMeta);

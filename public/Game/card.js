@@ -105,6 +105,26 @@ function UC_RemoveCard (eCard) {
 }
 
 //public
+function UC_HighlightPlayerCtn (ePlayer, bHighlight)
+{
+    if (!ePlayer) { console.log("Error..."); return; }    
+
+    const horCtn = ePlayer.querySelector (".cardCtnHor");
+    const verCtn = ePlayer.querySelector (".cardCtnVer");
+    if (!horCtn && !verCtn) { console.log("Error..."); return; }
+    const mainCtn = (horCtn) ? horCtn : verCtn;
+    
+    if (bHighlight)
+    {
+        mainCtn.style.boxShadow = "0px 0px 45px 10px #ff5555";
+    }
+    else
+    {
+        mainCtn.style.boxShadow = "none";
+    }
+}
+
+//public
 //Takes in a card element and adds/removes a higlight effect
 function UC_HighlightCard (eCard, bHighlight) {
     if (!eCard) { console.log ("Invalid parameter..."); return; }
@@ -154,11 +174,12 @@ function UC_SetDirection (bIsClockwise)
 //      int? winCount
 //      array cards
 // 
-function UC_SetPlayerDetails (player, playerDetails)
+function UC_SetPlayerDetails (player, playerDetails, nRoundsToWin)
 {
     if (!player || !playerDetails) { console.log ("Something went wrong"); return;}
 
     player.querySelector("p").textContent = playerDetails.name;
+    // player.querySelector("p").textContent = `${playerDetails.name} (${playerDetails.winCount}/${nRoundsToWin})`;
 
     UCi_RemoveAllCards (player);
 
